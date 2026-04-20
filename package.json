@@ -1,0 +1,17 @@
+{
+  "name": "siby-widget",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev:dashboard",
+    "dev:dashboard": "cd dashboard && npm run dev",
+    "build": "cd dashboard && npm run build",
+    "install:all": "npm install && cd dashboard && npm install",
+    "widget:build": "node widget/build.js"
+  },
+
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
+
