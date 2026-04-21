@@ -54,6 +54,9 @@ export interface Agent {
   accent_color: string;
   font_family: string;
   border_radius: string;
+  glass_blur?: string;
+  glass_opacity?: string;
+  entrance_animation?: string;
   position: string;
   button_icon: string;
   button_label: string;
@@ -80,6 +83,7 @@ export interface Agent {
   show_timestamps: boolean;
   enable_feedback: boolean;
   quick_replies?: string[];
+  enabled_tools?: string[];
   custom_css?: string;
   total_sessions: number;
   total_messages: number;

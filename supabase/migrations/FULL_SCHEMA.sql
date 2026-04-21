@@ -114,12 +114,15 @@ CREATE TABLE public.agents (
   max_tokens INTEGER DEFAULT 1024,
   groq_api_key TEXT,
 
-  -- Design
+  -- Design Premium
   primary_color TEXT DEFAULT '#0A0A0A',
   secondary_color TEXT DEFAULT '#FFFFFF',
   accent_color TEXT DEFAULT '#C0C0C0',
   font_family TEXT DEFAULT 'DM Sans',
   border_radius TEXT DEFAULT '12px',
+  glass_blur TEXT DEFAULT '8px',
+  glass_opacity TEXT DEFAULT '0.1',
+  entrance_animation TEXT DEFAULT 'fade-up',
   position TEXT DEFAULT 'bottom-right' CHECK (position IN ('bottom-right','bottom-left','top-right','top-left')),
   button_icon TEXT DEFAULT 'bot',
   button_label TEXT DEFAULT 'Chat avec nous',
@@ -150,7 +153,7 @@ CREATE TABLE public.agents (
   lead_intro TEXT DEFAULT 'Laissez-nous vos coordonnées pour que nous puissions vous recontacter.',
   lead_success TEXT DEFAULT 'Merci ! Un expert vous recontactera sous 24h.',
 
-  -- Fonctionnalités avancées
+  -- Fonctionnalités avancées & IA Tools
   rate_limit_per_hour INTEGER DEFAULT 50,
   allowed_domains TEXT[],
   blocked_keywords TEXT[],
@@ -160,6 +163,7 @@ CREATE TABLE public.agents (
   enable_feedback BOOLEAN DEFAULT TRUE,
   custom_css TEXT,
   quick_replies TEXT[] DEFAULT ARRAY[]::TEXT[],
+  enabled_tools TEXT[] DEFAULT ARRAY[]::TEXT[], -- Liste des outils IA activés
 
   -- Stats
   total_sessions INTEGER DEFAULT 0,
@@ -169,6 +173,22 @@ CREATE TABLE public.agents (
 
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+
+-- ══════════════════════════════════════════════════════════════════
+-- TABLE: integrations
+-- ══════════════════════════════════════════════════════════════════
+CREATE TABLE public.integrations (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  service TEXT NOT NULL, -- 'google_calendar', 'gmail', 'telegram', 'whatsapp'
+  credentials JSONB NOT NULL, -- Chiffré si possible ou tokens OAuth
+  settings JSONB DEFAULT '{}'::JSONB,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, service)
 );
 
 

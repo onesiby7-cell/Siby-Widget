@@ -1,33 +1,19 @@
 /**
- * SIBY-WIDGET — Robust Shadow DOM Integration v3.1 (DEBUG MODE)
- * Pure isolation for styles and zero conflicts with host websites.
+ * SIBY-WIDGET — Enterprise v4.0 (Premium Glassmorphism)
+ * Robust Shadow DOM Integration with Tool Calling Support.
  */
 (function (window, document) {
   "use strict";
 
-  // ── Configuration & Constants ─────────────────────────────────
   const SIBY_API = "https://vhchlbmzihnkoyrofsfs.supabase.co/functions/v1/chat-agent";
   const STORAGE_PREFIX = "siby_";
   const VISITOR_KEY = "siby_vid";
-  const MAX_HISTORY = 20;
 
-  console.log("[Siby] Widget script loaded. Starting initialization...");
-
-  // ── Find Script & Agent ID ──────────────────────────────────
   const scriptTag = document.currentScript || document.querySelector('script[data-agent-id]');
-  if (!scriptTag) {
-    console.error("[Siby] Script tag not found. Make sure to use <script src='...' data-agent-id='...' async></script>");
-    return;
-  }
+  if (!scriptTag) return;
   const AGENT_ID = scriptTag.getAttribute("data-agent-id");
-  if (!AGENT_ID) {
-    console.warn("[Siby] Missing data-agent-id attribute.");
-    return;
-  }
+  if (!AGENT_ID) return;
 
-  console.log("[Siby] Target Agent ID:", AGENT_ID);
-
-  // ── Storage Helpers ──────────────────────────────────────────
   function getVisitorId() {
     let vid = localStorage.getItem(VISITOR_KEY);
     if (!vid) {
@@ -45,44 +31,25 @@
     localStorage.setItem(SESSION_KEY, JSON.stringify(data));
   }
 
-  // ── Fetch Agent Config ───────────────────────────────────────
   async function fetchConfig() {
     try {
-      console.log("[Siby] Fetching configuration from:", SIBY_API);
       const res = await fetch(`${SIBY_API}?config=1&agentId=${AGENT_ID}`);
-      if (res.ok) {
-        const data = await res.json();
-        console.log("[Siby] Configuration loaded successfully:", data.name);
-        return data;
-      } else {
-        const err = await res.text();
-        console.error("[Siby] API error (" + res.status + "):", err);
-        if (res.status === 401) console.error("[Siby] CONSEIL : Déployez avec --no-verify-jwt pour autoriser l'accès public.");
-        return null;
-      }
+      if (res.ok) return await res.json();
     } catch (e) {
-      console.error("[Siby] Network error fetching config:", e);
+      console.error("[Siby] Config error:", e);
     }
     return null;
   }
 
-  // ── Main Controller ──────────────────────────────────────────
   async function init() {
     const cfg = await fetchConfig();
-    if (!cfg) {
-      console.error("[Siby] Initialization aborted: No config found for ID " + AGENT_ID);
-      return;
-    }
+    if (!cfg) return;
 
-    // Create Host Element
     const host = document.createElement("div");
     host.id = "siby-widget-root";
     document.body.appendChild(host);
 
-    // Attach Shadow Root
     const shadow = host.attachShadow({ mode: "open" });
-
-    // Build Style & HTML
     const styleEl = document.createElement("style");
     styleEl.textContent = getStyles(cfg);
     shadow.appendChild(styleEl);
@@ -92,13 +59,8 @@
     container.innerHTML = getTemplate(cfg);
     shadow.appendChild(container);
 
-    // Font injection (Google Fonts needs to be in head, cannot be in shadow DOM)
     injectFont(cfg.font_family || "DM Sans");
-
-    // Logic Binding
     setupLogic(shadow, cfg);
-    
-    console.log("[Siby] Widget is now visible and ready!");
   }
 
   function injectFont(fontName) {
@@ -124,7 +86,7 @@
             <div class="siby-status-text">${cfg.chat_subtitle || "En ligne"}</div>
           </div>
           <div class="siby-actions">
-            <button id="siby-clear" title="Effacer l'historique">🗑</button>
+            <button id="siby-clear" title="Effacer">🗑</button>
             <button id="siby-close" title="Fermer">✕</button>
           </div>
         </div>
@@ -134,12 +96,11 @@
             <textarea id="siby-input" placeholder="${cfg.placeholder_text || 'Écrivez ici...'}" rows="1"></textarea>
             <button id="siby-send">➤</button>
           </div>
-          <div class="siby-branding">Propulsé par <a href="https://dashboard-zeta-sand-24.vercel.app" target="_blank">Siby</a></div>
+          <div class="siby-branding">Propulsé par <a href="https://siby-widget.com" target="_blank">Siby AI</a></div>
         </div>
       </div>
-      <div id="siby-launcher" role="button" aria-label="Ouvrir le chat" tabindex="0">
+      <div id="siby-launcher" role="button" aria-label="Chat" tabindex="0">
         <span id="siby-launcher-icon">${cfg.button_icon || "🤖"}</span>
-        <div id="siby-badge"></div>
       </div>
     `;
   }
@@ -147,70 +108,81 @@
   function getStyles(cfg) {
     const primary = cfg.primary_color || "#0A0A0A";
     const accent = cfg.accent_color || "#C0C0C0";
-    const radius = cfg.border_radius || "16px";
     const isDark = cfg.widget_theme === "dark" || (cfg.widget_theme === "auto" && window.matchMedia?.("(prefers-color-scheme: dark)").matches);
     const font = cfg.font_family || 'DM Sans';
+    const blur = cfg.glass_blur || "12px";
+    const opacity = cfg.glass_opacity || "0.1";
+    const anim = cfg.entrance_animation || "fade-up";
+
+    const bgBase = isDark ? `rgba(10, 10, 10, ${1 - opacity})` : `rgba(255, 255, 255, ${1 - opacity})`;
     
     return `
-      :host { --siby-primary: ${primary}; --siby-accent: ${accent}; --siby-radius: ${radius}; }
-      #siby-container * { box-sizing: border-box; font-family: '${font}', sans-serif; }
+      :host { --siby-primary: ${primary}; --siby-accent: ${accent}; }
+      #siby-container * { box-sizing: border-box; font-family: '${font}', sans-serif; -webkit-font-smoothing: antialiased; }
       
       #siby-container { 
         position: fixed; z-index: 2147483647; 
-        ${cfg.position?.includes("left") ? "left:20px" : "right:20px"}; 
-        ${cfg.position?.includes("top") ? "top:20px" : "bottom:20px"};
-        display:flex; flex-direction:column; align-items:flex-end;
+        ${cfg.position?.includes("left") ? "left:24px" : "right:24px"}; 
+        ${cfg.position?.includes("top") ? "top:24px" : "bottom:24px"};
+        display:flex; flex-direction:column; align-items: ${cfg.position?.includes("left") ? "flex-start" : "flex-end"};
       }
 
       #siby-launcher {
-        width: 60px; height: 60px; border-radius: 50%;
-        background: linear-gradient(135deg, var(--siby-primary) 0%, #333 100%);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+        width: 64px; height: 64px; border-radius: 20px;
+        background: linear-gradient(135deg, var(--siby-primary) 0%, #1a1a1a 100%);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);
         cursor: pointer; display: flex; align-items: center; justify-content: center;
-        font-size: 26px; transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
-        animation: siby-pulse 3s infinite;
+        font-size: 30px; transition: all 0.4s cubic-bezier(.16,1,.3,1);
       }
-      #siby-launcher:hover { transform: scale(1.1); }
-      #siby-launcher.open { transform: rotate(90deg); }
+      #siby-launcher:hover { transform: scale(1.08) translateY(-4px); box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
+      #siby-launcher.open { transform: rotate(90deg) scale(0.9); opacity: 0.8; }
 
       #siby-window {
-        width: 380px; max-width: calc(100vw - 40px); height: 600px; max-height: calc(100vh - 100px);
-        background: ${isDark ? '#0F0F0F' : '#FFFFFF'}; border-radius: var(--siby-radius);
-        border: 1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-        box-shadow: 0 20px 60px rgba(0,0,0,0.4); display: flex; flex-direction: column;
-        overflow: hidden; margin-bottom: 12px; transform-origin: right bottom;
-        animation: siby-in 0.3s ease forwards;
-        color: ${isDark ? '#E8E8E8' : '#1A1A1A'};
+        width: 400px; max-width: calc(100vw - 48px); height: 650px; max-height: calc(100vh - 120px);
+        background: ${bgBase}; backdrop-filter: blur(${blur}); -webkit-backdrop-filter: blur(${blur});
+        border-radius: ${cfg.border_radius || '24px'};
+        border: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+        box-shadow: 0 24px 80px rgba(0,0,0,0.4); display: flex; flex-direction: column;
+        overflow: hidden; margin-bottom: 16px; transform-origin: center bottom;
+        animation: siby-${anim} 0.5s cubic-bezier(.16,1,.3,1) forwards;
+        color: ${isDark ? '#F0F0F0' : '#111'};
       }
 
       #siby-header {
-        padding: 16px; background: var(--siby-primary); color: #fff;
-        display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+        padding: 20px; background: linear-gradient(to right, var(--siby-primary), rgba(0,0,0,0.2)); color: #fff;
+        display: flex; align-items: center; gap: 14px;
       }
-      #siby-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; position: relative; font-size: 20px; }
-      #siby-status { width: 10px; height: 10px; background: #22C55E; border-radius: 50%; position: absolute; bottom: 0; right: 0; border: 2px solid var(--siby-primary); }
+      #siby-avatar { width: 44px; height: 44px; border-radius: 14px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; position: relative; font-size: 24px; border: 1px solid rgba(255,255,255,0.1); }
+      #siby-status { width: 12px; height: 12px; background: #22C55E; border-radius: 50%; position: absolute; bottom: -2px; right: -2px; border: 2px solid #000; }
       .siby-header-info { flex: 1; }
-      .siby-title { font-weight: 700; font-size: 15px; }
-      .siby-status-text { font-size: 11px; opacity: 0.7; }
-      .siby-actions button { background: none; border: none; color: #fff; cursor: pointer; opacity: 0.6; padding: 4px; font-size: 14px; }
-      .siby-actions button:hover { opacity: 1; }
+      .siby-title { font-weight: 800; font-size: 16px; letter-spacing: -0.3px; }
+      .siby-status-text { font-size: 11px; opacity: 0.6; font-weight: 500; }
+      .siby-actions button { background: rgba(255,255,255,0.1); border: none; color: #fff; cursor: pointer; width: 30px; height: 30px; border-radius: 50%; font-size: 12px; transition: all 0.2s; }
+      .siby-actions button:hover { background: rgba(255,255,255,0.2); }
 
-      #siby-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-      .siby-msg { max-width: 85%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; word-wrap: break-word; }
-      .siby-msg.bot { align-self: flex-start; background: ${isDark ? '#252525' : '#F0F2F5'}; color: ${isDark ? '#E8E8E8' : '#111'}; border-bottom-left-radius: 4px; }
-      .siby-msg.user { align-self: flex-end; background: var(--siby-primary); color: #fff; border-bottom-right-radius: 4px; }
+      #siby-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; }
+      #siby-messages::-webkit-scrollbar { width: 4px; }
+      #siby-messages::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 10px; }
 
-      #siby-footer { padding: 12px 16px; border-top: 1px solid ${isDark ? '#222' : '#EEE'}; background: ${isDark ? '#0A0A0A' : '#FAFAFA'}; }
-      #siby-input-area { display: flex; gap: 8px; align-items: flex-end; }
-      #siby-input { flex: 1; border: 1px solid ${isDark ? '#333' : '#DDD'}; border-radius: 10px; padding: 10px; font-size: 14px; outline: none; background: ${isDark ? '#1A1A1A' : '#FFF'}; color: inherit; resize: none; max-height: 100px; }
-      #siby-input:focus { border-color: var(--siby-accent); }
-      #siby-send { width: 40px; height: 40px; border-radius: 10px; background: var(--siby-primary); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+      .siby-msg { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 14.5px; line-height: 1.6; animation: siby-msg-in 0.3s ease-out forwards; }
+      .siby-msg.bot { align-self: flex-start; background: ${isDark ? 'rgba(255,255,255,0.06)' : '#F2F4F7'}; color: inherit; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.05); }
+      .siby-msg.user { align-self: flex-end; background: var(--siby-primary); color: #fff; border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+      #siby-footer { padding: 16px 20px 20px; background: rgba(0,0,0,0.03); border-top: 1px solid rgba(128,128,128,0.1); }
+      #siby-input-area { display: flex; gap: 10px; align-items: flex-end; background: ${isDark ? 'rgba(255,255,255,0.04)' : '#fff'}; border: 1px solid rgba(128,128,128,0.2); border-radius: 16px; padding: 6px 10px; transition: border-color 0.3s; }
+      #siby-input-area:focus-within { border-color: var(--siby-accent); }
+      #siby-input { flex: 1; border: none; background: transparent; padding: 8px 4px; font-size: 14.5px; outline: none; color: inherit; resize: none; max-height: 120px; }
+      #siby-send { width: 36px; height: 36px; border-radius: 12px; background: var(--siby-primary); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: transform 0.2s; }
+      #siby-send:hover { transform: scale(1.1); }
       
-      .siby-branding { text-align: center; font-size: 10px; opacity: 0.5; margin-top: 8px; }
+      .siby-branding { text-align: center; font-size: 10px; opacity: 0.4; margin-top: 10px; }
       .siby-branding a { color: inherit; text-decoration: none; font-weight: 700; }
 
-      @keyframes siby-pulse { 0%,100%{box-shadow: 0 4px 20px rgba(0,0,0,0.3)} 50%{box-shadow: 0 4px 20px rgba(0,0,0,0.1), 0 0 0 10px var(--siby-primary)20} }
-      @keyframes siby-in { from{opacity:0; transform:scale(0.9) translateY(20px)} to{opacity:1; transform:scale(1) translateY(0)} }
+      @keyframes siby-fade-up { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+      @keyframes siby-fade-in { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes siby-scale-up { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+      @keyframes siby-bounce-in { 0%{opacity:0; transform:scale(0.3)} 50%{transform:scale(1.05)} 70%{transform:scale(0.9)} 100%{opacity:1; transform:scale(1)} }
+      @keyframes siby-msg-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     `;
   }
 
@@ -227,7 +199,6 @@
     if (!session.history) session.history = [];
     const visitorId = getVisitorId();
 
-    // Init display
     session.history.forEach(m => appendUI(m.role, m.content));
     if (!session.history.length) appendUI("assistant", cfg.welcome_message);
 
@@ -235,20 +206,15 @@
       const open = win.style.display === "none";
       win.style.display = open ? "flex" : "none";
       launcher.classList.toggle("open", open);
-      if (open) { 
-        input.focus();
-        messages.scrollTop = messages.scrollHeight;
-      }
+      if (open) { input.focus(); messages.scrollTop = messages.scrollHeight; }
     };
 
     closeBtn.onclick = (e) => { e.stopPropagation(); launcher.click(); };
     clearBtn.onclick = (e) => { 
       e.stopPropagation();
-      if(confirm("Effacer l'historique de cette conversation ?")) { 
-        session.history = []; 
-        saveSession(session); 
-        messages.innerHTML = ""; 
-        appendUI("assistant", cfg.welcome_message); 
+      if(confirm("Effacer l'historique ?")) { 
+        session.history = []; saveSession(session); 
+        messages.innerHTML = ""; appendUI("assistant", cfg.welcome_message); 
       } 
     };
 
@@ -258,8 +224,8 @@
       input.value = "";
       appendUI("user", text);
       session.history.push({ role: "user", content: text });
-      saveSession(session);
       
+      const typing = showTyping();
       messages.scrollTop = messages.scrollHeight;
 
       try {
@@ -267,14 +233,12 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            agentId: AGENT_ID,
-            message: text,
-            visitorId,
-            sessionId: session.sessionId,
-            history: session.history.slice(-10)
+            agentId: AGENT_ID, message: text, visitorId,
+            sessionId: session.sessionId, history: session.history.slice(-10)
           })
         });
         const data = await res.json();
+        typing.remove();
         if (data.reply) {
           appendUI("assistant", data.reply);
           session.history.push({ role: "assistant", content: data.reply });
@@ -283,7 +247,8 @@
           messages.scrollTop = messages.scrollHeight;
         }
       } catch (e) {
-        appendUI("assistant", "Erreur de connexion. Vérifiez votre réseau.");
+        typing.remove();
+        appendUI("assistant", "⚠️ Problème de connexion.");
       }
     }
 
@@ -294,12 +259,20 @@
       if(!content) return;
       const el = document.createElement("div");
       el.className = `siby-msg ${role === "user" ? "user" : "bot"}`;
-      el.textContent = content;
+      el.innerHTML = content.replace(/\n/g, '<br>');
       messages.appendChild(el);
+    }
+
+    function showTyping() {
+      const el = document.createElement("div");
+      el.className = "siby-msg bot";
+      el.style.opacity = "0.6";
+      el.innerHTML = "•••";
+      messages.appendChild(el);
+      return el;
     }
   }
 
-  // Auto-boot
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {

@@ -20,6 +20,13 @@ const POSITIONS = [
   { value: 'top-left', label: '↖ Haut gauche' },
 ];
 
+const ANIMATIONS = [
+  { value: 'fade-up', label: '↑ Glissement haut' },
+  { value: 'fade-in', label: '✨ Apparition douce' },
+  { value: 'scale-up', label: '🔍 Zoom progressif' },
+  { value: 'bounce-in', label: '🏀 Rebond' },
+];
+
 const DEFAULT_AGENT: Partial<Agent> = {
   name: '', description: '', status: 'active',
   system_prompt: 'Tu es un assistant IA utile et professionnel. Réponds de manière claire, concise et amicale.',
@@ -30,6 +37,7 @@ const DEFAULT_AGENT: Partial<Agent> = {
   chat_subtitle: 'En ligne · répond en quelques secondes',
   welcome_message: 'Bonjour 👋 Comment puis-je vous aider ?',
   placeholder_text: 'Écrivez votre message...',
+  glass_blur: '10px', glass_opacity: '0.1', entrance_animation: 'fade-up',
   widget_theme: 'dark', email_capture_enabled: true,
   email_capture_trigger: 'on_lead', rate_limit_per_hour: 50,
   show_typing_indicator: true, show_timestamps: true,
@@ -43,11 +51,12 @@ const DEFAULT_AGENT: Partial<Agent> = {
 const TABS = [
   { id: 'identity', icon: '⚡', label: 'Identité' },
   { id: 'ai', icon: '🧠', label: 'IA & Prompt' },
-  { id: 'design', icon: '🎨', label: 'Design' },
-  { id: 'forms', icon: '📋', label: 'Formulaire Leads' },
-  { id: 'email', icon: '📧', label: 'EmailJS' },
-  { id: 'advanced', icon: '⚙️', label: 'Avancé' },
-  { id: 'integration', icon: '📋', label: 'Intégration' },
+  { id: 'skills', icon: '🛠️', label: 'Capacités IA' },
+  { id: 'design', icon: '🎨', label: 'Design Premium' },
+  { id: 'forms', icon: '📋', label: 'Leads Form' },
+  { id: 'connectors', icon: '🔌', label: 'Connecteurs' },
+  { id: 'advanced', icon: '⚙️', label: 'Config' },
+  { id: 'integration', icon: '💾', label: 'Installation' },
 ];
 
 export default function AgentFormPage() {
@@ -428,10 +437,88 @@ export default function AgentFormPage() {
                 <FormRow label="Border radius">
                   <input className="input" value={form.border_radius || '16px'} onChange={e => set('border_radius', e.target.value)} placeholder="16px" style={{ maxWidth: '120px' }} />
                 </FormRow>
+
+                <SectionTitle>Effets Enterprise (Glassmorphism)</SectionTitle>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <FormRow label={`Flou (Glass Blur) : ${form.glass_blur}`}>
+                     <input type="range" min="0" max="30" step="1" value={parseInt(form.glass_blur || '10')} onChange={e => set('glass_blur', `${e.target.value}px`)}
+                        style={{ width: '100%', accentColor: '#C0C0C0' }} />
+                  </FormRow>
+                  <FormRow label={`Opacité (Vitre) : ${form.glass_opacity}`}>
+                     <input type="range" min="0" max="1" step="0.05" value={parseFloat(form.glass_opacity || '0.1')} onChange={e => set('glass_opacity', e.target.value)}
+                        style={{ width: '100%', accentColor: '#C0C0C0' }} />
+                  </FormRow>
+                </div>
+                <FormRow label="Animation d'entrée">
+                  <select className="input" value={form.entrance_animation || 'fade-up'} onChange={e => set('entrance_animation', e.target.value)}>
+                    {ANIMATIONS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+                  </select>
+                </FormRow>
+
                 <FormRow label="CSS personnalisé (avancé)">
                   <textarea className="input" value={form.custom_css || ''} onChange={e => set('custom_css', e.target.value)}
                     placeholder="#siby-btn { /* vos styles */ }" style={{ minHeight: '100px', fontFamily: 'DM Mono, monospace', fontSize: '12px' }} />
                 </FormRow>
+              </div>
+            )}
+
+            {/* ── TAB: SKILLS ──────────────────────────── */}
+            {tab === 'skills' && (
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                 <SectionTitle>Capacités IA (Tools)</SectionTitle>
+                 <div className="card" style={{ padding: '20px', background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.1)' }}>
+                   <div style={{ fontSize: '14px', fontWeight: 700, color: '#C0C0C0', marginBottom: '4px' }}>⚡ Intelligence Autonome activée</div>
+                   <p style={{ fontSize: '13px', color: '#606060' }}>L'IA peut désormais détecter et exécuter des actions spécifiques en fonction du contexte.</p>
+                 </div>
+
+                 <div style={{ display: 'grid', gap: '12px' }}>
+                   {[
+                     { id: 'submit_lead', name: 'Capture Lead Pro', desc: 'Détection intelligente des noms, emails et contextes de contact.', enabled: true },
+                     { id: 'notify_admin', name: 'Alertes Admin', desc: 'Prévenir le propriétaire en cas de question urgente.', enabled: true },
+                     { id: 'google_calendar', name: 'Google Calendar (Bientôt)', desc: 'Prendre rendez-vous directement dans votre calendrier.', enabled: false },
+                     { id: 'gmail', name: 'Gmail Orders (Bientôt)', desc: 'Envoyer des emails de suivi personnalisés.', enabled: false },
+                   ].map(s => (
+                     <div key={s.id} style={{
+                       padding: '16px', borderRadius: '12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                       display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: s.enabled ? 1 : 0.5
+                     }}>
+                       <div>
+                         <div style={{ fontSize: '14px', fontWeight: 700, color: '#F0F0F0' }}>{s.name}</div>
+                         <div style={{ fontSize: '12px', color: '#606060' }}>{s.desc}</div>
+                       </div>
+                       <div style={{
+                         width: '40px', height: '22px', borderRadius: '20px',
+                         background: s.enabled ? '#22C55E' : '#333', position: 'relative', cursor: s.enabled ? 'pointer' : 'not-allowed'
+                       }}>
+                         <div style={{ width: '18px', height: '18px', background: '#fff', borderRadius: '50%', position: 'absolute', top: '2px', left: s.enabled ? '20px' : '2px', transition: 'all 0.2s' }}></div>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+            )}
+
+            {/* ── TAB: CONNECTORS ──────────────────────── */}
+            {tab === 'connectors' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <SectionTitle>Connecteurs Externes</SectionTitle>
+                <p style={{ fontSize: '14px', color: '#606060' }}>Connectez vos outils métier pour donner du pouvoir à votre agent.</p>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
+                  {[
+                    { id: 'google', name: 'Google Cloud', icon: '🌈', status: 'Non connecté' },
+                    { id: 'telegram', name: 'Telegram Bot', icon: '✈️', status: 'Configuré' },
+                    { id: 'whatsapp', name: 'WhatsApp (Twilio)', icon: '💬', status: 'Bientôt' },
+                    { id: 'emailjs', name: 'EmailJS Notifications', icon: '📨', status: 'Connecté' },
+                  ].map(c => (
+                    <div key={c.id} className="card" style={{ padding: '20px', textAlign: 'center', cursor: 'pointer', transition: 'transform 0.2s' }}>
+                      <div style={{ fontSize: '32px', marginBottom: '12px' }}>{c.icon}</div>
+                      <div style={{ fontSize: '15px', fontWeight: 700, color: '#F0F0F0' }}>{c.name}</div>
+                      <div style={{ fontSize: '11px', color: c.status === 'Connecté' || c.status === 'Configuré' ? '#22C55E' : '#606060', fontWeight: 600, marginTop: '4px' }}>{c.status}</div>
+                      <button className="btn-secondary" style={{ width: '100%', marginTop: '16px', fontSize: '12px' }}>Gérer</button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -676,9 +763,13 @@ export default function AgentFormPage() {
                 <div style={{
                   borderRadius: (form.border_radius as string) || '16px',
                   overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)',
-                  background: form.widget_theme === 'light' ? '#FAFAFA' : '#0D0D0D',
-                  boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
+                  boxShadow: '0 8px 40px rgba(0,0,0,0.6)',
                   fontFamily: form.font_family || 'DM Sans, sans-serif',
+                  position: 'relative',
+                  backdropFilter: `blur(${form.glass_blur || '10px'})`,
+                  backgroundColor: form.widget_theme === 'light' 
+                    ? `rgba(250, 250, 250, ${1 - parseFloat(form.glass_opacity || '0.1')})`
+                    : `rgba(13, 13, 13, ${1 - parseFloat(form.glass_opacity || '0.1')})`,
                 }}>
                   {/* Header */}
                   <div style={{
