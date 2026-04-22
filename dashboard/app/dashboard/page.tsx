@@ -15,7 +15,7 @@ const CHART_DATA_FALLBACK = [
 ];
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState({ agents: 0, sessions: 0, leads: 0, messages: 0 });
+  const [stats, setStats] = useState({ agents: 0, sessions: 0, leads: 0, messages: 0, revenue: 0 });
   const [agents, setAgents] = useState<{ id: string; name: string; status: string; total_sessions: number; total_leads: number }[]>([]);
   const [profile, setProfile] = useState<{ full_name?: string; plan?: string; messages_used?: number; message_quota?: number } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,40 +24,49 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const load = async () => {
-      // On utilise l'ID maître ou l'utilisateur auth si dispo
-      const { data: { user } } = await supabase.auth.getUser();
-      const userId = user?.id || '00000000-0000-0000-0000-000000000000';
+      try {
+        // On utilise l'ID maître ou l'utilisateur auth si dispo
+        const { data: authData } = await supabase.auth.getUser();
+        const userId = authData?.user?.id || '00000000-0000-0000-0000-000000000000';
 
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', userId).single();
-      const { data: agentsData } = await supabase.from('agents').select('*').eq('user_id', userId).order('created_at', { ascending: false });
-      const { count: leadsCount } = await supabase.from('leads').select('*', { count: 'exact', head: true }).eq('user_id', userId);
+        const { data: profileData } = await supabase.from('profiles').select('*').eq('id', userId).single();
+        const { data: agentsData } = await supabase.from('agents').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+        const { count: leadsCount } = await supabase.from('leads').select('*', { count: 'exact', head: true }).eq('user_id', userId);
+        const { data: paymentsData } = await supabase.from('payments').select('amount').eq('user_id', userId);
 
-      const allAgents = agentsData || [];
-      setProfile(profileData);
-      setAgents(allAgents.slice(0, 5));
-      setStats({
-        agents: allAgents.length,
-        sessions: allAgents.reduce((s, a) => s + (a.total_sessions || 0), 0),
-        leads: leadsCount || 0,
-        messages: allAgents.reduce((s, a) => s + (a.total_messages || 0), 0),
-      });
-      setLoading(false);
+        const allAgents = agentsData || [];
+        setProfile(profileData);
+        setAgents(allAgents.slice(0, 5));
+        setStats({
+          agents: allAgents.length,
+          sessions: allAgents.reduce((s, a) => s + (a.total_sessions || 0), 0),
+          leads: leadsCount || 0,
+          messages: allAgents.reduce((s, a) => s + (a.total_messages || 0), 0),
+          revenue: (paymentsData || []).reduce((acc, p) => acc + Number(p.amount), 0),
+        });
+        setLoading(false);
+      } catch (err) {
+        console.error("Erreur de chargement Dashboard:", err);
+      }
     };
     load();
   }, []);
 
   const INSIGHTS = [
-    { type: 'trend', text: "Analysez vos performances en temps réel ici.", color: '#22C55E' },
-    { type: 'alert', text: "Configurez vos agents pour capturer plus de leads.", color: '#EAB308' },
-    { type: 'tip', text: "Partagez votre script widget pour commencer à chatter.", color: '#C0C0C0' },
+    { type: 'trend', text: "Le système SSR est actif. Vos sessions sont sécurisées au niveau Enterprise.", color: '#22C55E' },
+    { type: 'alert', text: "Pensez à enregistrer chaque paiement reçu dans l'onglet 'Finances'.", color: '#EAB308' },
+    { type: 'tip', text: "Vos agents avec le statut 'Stopé' ne consomment plus de tokens IA.", color: '#C0C0C0' },
   ];
 
   const STAT_CARDS = [
-    { label: 'Agents actifs', value: stats.agents, icon: '⚡', color: '#C0C0C0', trend: 'Total' },
-    { label: 'Sessions totales', value: stats.sessions, icon: '💬', color: '#C0C0C0', trend: 'Live' },
-    { label: 'Leads capturés', value: stats.leads, icon: '🎯', color: '#22C55E', trend: 'CRM' },
-    { label: 'Messages envoyés', value: stats.messages, icon: '📨', color: '#C0C0C0', trend: `Quota: ${profile?.message_quota || 10000}` },
+    { label: 'Revenus (Empire)', value: `$ ${stats.revenue.toLocaleString()}`, icon: '💰', color: '#22C55E', trend: 'Empire' },
+    { label: 'Capture Leads', value: stats.leads, icon: '🎯', color: '#22C55E', trend: 'Conversion' },
+    { label: 'Agents Actifs', value: stats.agents, icon: '🛡️', color: '#606060', trend: 'SaaS' },
+    { label: 'Messages IA', value: stats.messages, icon: '🧠', color: '#C0C0C0', trend: `Limit: ${profile?.message_quota || 10000}` },
   ];
+
+  const REVENUE_GOAL = 5000; // Objectif de 5000$ pour le test
+  const revenuePercent = Math.min(100, (stats.revenue / REVENUE_GOAL) * 100);
 
   return (
     <div style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -75,17 +84,30 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div style={{
+            padding: '8px 16px', borderRadius: '12px', background: 'rgba(34,197,94,0.05)', 
+            border: '1px solid rgba(34,197,94,0.15)', display: 'flex', flexDirection: 'column',
+            minWidth: '160px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 800, color: '#22C55E' }}>Objectif : {REVENUE_GOAL}$</span>
+              <span style={{ fontSize: '10px', fontWeight: 800, color: '#F0F0F0' }}>{Math.round(revenuePercent)}%</span>
+            </div>
+            <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
+              <div style={{ width: `${revenuePercent}%`, height: '100%', background: '#22C55E', transition: 'width 1s ease-out' }} />
+            </div>
+          </div>
           <span style={{
             padding: '6px 14px', borderRadius: '100px',
             background: 'rgba(192,192,192,0.08)', border: '1px solid rgba(192,192,192,0.15)',
-            fontSize: '12px', fontWeight: 700, color: '#C0C0C0', textTransform: 'uppercase',
-            letterSpacing: '0.05em',
+            fontSize: '11px', fontWeight: 800, color: '#C0C0C0', textTransform: 'uppercase',
+            letterSpacing: '0.1em',
           }}>
-            Plan {profile?.plan || 'Free'}
+            SYSTEM PLATINUM
           </span>
-          <Link href="/dashboard/agents/new" className="btn-primary" style={{ textDecoration: 'none', fontSize: '13px', padding: '8px 16px' }}>
-            + Nouvel Agent
+          <Link href="/dashboard/agents/new" className="btn-primary" style={{ textDecoration: 'none', fontSize: '13px', padding: '10px 18px', fontWeight: 800 }}>
+            + NOUVEL AGENT
           </Link>
         </div>
       </div>
