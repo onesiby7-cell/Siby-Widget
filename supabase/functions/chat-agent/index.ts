@@ -130,7 +130,20 @@ serve(async (req) => {
 
     // ── Appel Groq avec Tool Calling ────────────────────────
     const groqKey = agent.groq_api_key || Deno.env.get("GROQ_API_KEY");
-    const systemContent = `${agent.system_prompt}\n\n📚 BASE DE CONNAISSANCES:\n${agent.knowledge_base || "Aucune"}\n\nTu es "${agent.name}". Réponds de manière concise. Utilise l'outil 'submit_lead' dès qu'un email ou nom est partagé.`;
+    const systemContent = `Tu es "${agent.name}", un agent IA de haut niveau pour Siby Enterprise.
+DESCRIPTION DE L'ENTREPRISE:
+${agent.description || "Une entreprise innovante."}
+
+📚 BASE DE CONNAISSANCES:
+${agent.knowledge_base || "Informations générales sur le service."}
+
+COMPORTEMENT AGENTIQ:
+1. Sois CURIEUX : Si l'utilisateur pose une question vague, demande-lui des précisions sur son projet ou ses besoins.
+2. Sois PROACTIF : Ton but est d'aider le visiteur à avancer. Si tu sens un intérêt, propose de prendre ses coordonnées.
+3. Sois SOLIDE : Ne donne pas d'informations dont tu n'es pas sûr.
+4. Ton style est professionnel, chaleureux et efficace.
+
+Utilise l'outil 'submit_lead' dès que tu as des infos de contact précises.`;
 
     let messages = [
       { role: "system", content: systemContent },
@@ -143,11 +156,11 @@ serve(async (req) => {
         method: "POST",
         headers: { "Authorization": `Bearer ${groqKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: agent.model || "llama-3.1-8b-instant",
+          model: agent.model || "llama-3.1-70b-versatile",
           messages: msgs,
           tools: TOOLS,
           tool_choice: "auto",
-          temperature: agent.temperature || 0.7,
+          temperature: agent.temperature || 0.6,
         }),
       });
       return await res.json();
@@ -166,23 +179,34 @@ serve(async (req) => {
         const args = JSON.parse(call.function.arguments);
         let result = { status: "error", message: "Unknown tool" };
 
-        console.log(`Executing tool: ${name}`, args);
-
         if (name === "submit_lead" && currentSessionId) {
           const { error: leadErr } = await supabase.from("leads").upsert({
             agent_id: agent.id, session_id: currentSessionId, user_id: agent.user_id,
-            name: args.name, email: args.email, phone: args.phone, source: "widget_ai"
+            name: args.name, email: args.email, phone: args.phone, source: "AgentIQ_Lead"
           });
           
           if (!leadErr) {
             await supabase.from("sessions").update({ is_lead: true, lead_email: args.email }).eq("id", currentSessionId);
-            // Notification EmailJS si activée
+            
+            const notificationMsg = `🚀 Nouveau Lead pour ${agent.name} !\n\n👤 Nom: ${args.name || "N/A"}\n📧 Email: ${args.email}\n📱 Tel: ${args.phone || "N/A"}\n📝 Notes: ${args.notes || "Aucune"}`;
+
+            // 1. Notification Telegram (SI CONFIGURÉ)
+            if (agent.telegram_bot_token && agent.telegram_chat_id) {
+               try {
+                 await fetch(`https://api.telegram.org/bot${agent.telegram_bot_token}/sendMessage`, {
+                   method: "POST", headers: { "Content-Type": "application/json" },
+                   body: JSON.stringify({ chat_id: agent.telegram_chat_id, text: notificationMsg })
+                 });
+               } catch (e) { console.error("Telegram Error:", e); }
+            }
+
+            // 2. Notification EmailJS
             if (agent.email_capture_enabled && agent.emailjs_service_id) {
                await sendEmailNotification(agent.emailjs_service_id, agent.emailjs_template_id, agent.emailjs_public_key, {
-                 agent_name: agent.name, lead_name: args.name || "Inconnu", lead_email: args.email
+                 agent_name: agent.name, lead_name: args.name || "Client potentiel", lead_email: args.email
                });
             }
-            result = { status: "success", message: "Lead enregistré avec succès." };
+            result = { status: "success", message: "Lead enregistré et notifications envoyées." };
             toolExecResult = "lead_captured";
           }
         }

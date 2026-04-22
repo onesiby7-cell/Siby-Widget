@@ -66,6 +66,7 @@ export default function AgentFormPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [quickReplyInput, setQuickReplyInput] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
   const router = useRouter();
@@ -89,12 +90,34 @@ export default function AgentFormPage() {
     setSaved(false);
   }, []);
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setUploading(true);
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `logos/${fileName}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('agent-assets')
+      .upload(filePath, file);
+      
+    if (uploadError) {
+      setError("Erreur d'upload : " + uploadError.message);
+    } else {
+      const { data } = supabase.storage.from('agent-assets').getPublicUrl(filePath);
+      set('avatar_url', data.publicUrl);
+      setSaved(false);
+    }
+    setUploading(false);
+  };
+
   const handleSave = async () => {
     if (!form.name?.trim()) { setError('Le nom de l\'agent est requis.'); return; }
     if (!form.system_prompt?.trim()) { setError('Le prompt système est requis.'); return; }
     setSaving(true); setError('');
     
-    // Récupération de l'ID maître local
     const masterId = localStorage.getItem('siby_admin_id') || '00000000-0000-0000-0000-000000000000';
 
     const payload = { ...form, user_id: masterId, updated_at: new Date().toISOString() };
@@ -344,180 +367,123 @@ export default function AgentFormPage() {
             {/* ── TAB: DESIGN ──────────────────────────── */}
             {tab === 'design' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <SectionTitle>Design du widget</SectionTitle>
-                <FormRow label="Thème">
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    {(['dark', 'light', 'auto'] as const).map(t => (
-                      <button key={t} onClick={() => set('widget_theme', t)} style={{
-                        padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
-                        cursor: 'pointer', transition: 'all 0.15s',
-                        background: form.widget_theme === t ? 'rgba(192,192,192,0.1)' : 'var(--bg-elevated)',
-                        border: form.widget_theme === t ? '1px solid rgba(192,192,192,0.3)' : '1px solid var(--border)',
-                        color: form.widget_theme === t ? '#C0C0C0' : '#606060',
-                      }}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
-                    ))}
+                <SectionTitle>Design du widget (Canvas)</SectionTitle>
+                
+                <div style={{ 
+                  padding: '20px', borderRadius: '12px', background: 'rgba(192,192,192,0.03)', 
+                  border: '1px solid var(--border)', display: 'flex', gap: '20px', alignItems: 'center'
+                }}>
+                  <div style={{ 
+                    width: '100px', height: '100px', borderRadius: '12px', 
+                    background: 'var(--bg-elevated)', border: '2px dashed var(--border)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
+                  }}>
+                    {form.avatar_url ? (
+                      <img src={form.avatar_url} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    ) : (
+                      <span style={{ fontSize: '24px' }}>🖼️</span>
+                    )}
                   </div>
-                </FormRow>
-                <FormRow label="Thèmes Prédéfinis (Glassmorphism inspired)">
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => {
-                      set('widget_theme', 'dark');
-                      set('primary_color', '#000000');
-                      set('secondary_color', '#FFFFFF');
-                      set('accent_color', '#22C55E');
-                    }} className="btn-secondary" style={{ fontSize: '11px', flex: 1 }}>🛡️ Dark Emerald</button>
-                    <button onClick={() => {
-                      set('widget_theme', 'light');
-                      set('primary_color', '#FFFFFF');
-                      set('secondary_color', '#000000');
-                      set('accent_color', '#00D1FF');
-                    }} className="btn-secondary" style={{ fontSize: '11px', flex: 1 }}>💎 Blue Light</button>
-                    <button onClick={() => {
-                      set('widget_theme', 'dark');
-                      set('primary_color', '#0F172A');
-                      set('secondary_color', '#FFFFFF');
-                      set('accent_color', '#F472B6');
-                    }} className="btn-secondary" style={{ fontSize: '11px', flex: 1 }}>🌸 Sakura Night</button>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#F0F0F0', marginBottom: '4px' }}>Logo de l'agent</div>
+                    <p style={{ fontSize: '12px', color: '#606060', marginBottom: '12px' }}>Format PNG ou SVG conseillé. Apparaîtra dans l'en-tête du widget.</p>
+                    <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} id="logo-upload" />
+                    <label htmlFor="logo-upload" className="btn-secondary" style={{ cursor: 'pointer', display: 'inline-block', fontSize: '12px' }}>
+                      {uploading ? '⏳ Envoi...' : '📤 Choisir un logo'}
+                    </label>
                   </div>
-                </FormRow>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                  <FormRow label="Thème visuel">
+                    <select className="input" value={form.widget_theme || 'dark'} onChange={e => set('widget_theme', e.target.value)}>
+                      <option value="dark">🌙 Dark Mode (Premium)</option>
+                      <option value="light">☀️ Light Mode (Clean)</option>
+                      <option value="auto">🌗 Auto (Système)</option>
+                    </select>
+                  </FormRow>
+                  <FormRow label="Position">
+                    <select className="input" value={form.position || 'bottom-right'} onChange={e => set('position', e.target.value)}>
+                      {POSITIONS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+                    </select>
+                  </FormRow>
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
                   {[
-                    { key: 'primary_color', label: 'Couleur primaire' },
-                    { key: 'secondary_color', label: 'Couleur secondaire' },
-                    { key: 'accent_color', label: 'Couleur accent' },
+                    { key: 'primary_color', label: 'Primaire' },
+                    { key: 'secondary_color', label: 'Secondaire' },
+                    { key: 'accent_color', label: 'Accent' },
                   ].map(c => (
                     <FormRow key={c.key} label={c.label}>
-                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <div className="color-swatch" style={{ background: (form as any)[c.key] || '#000' }}>
-                          <input type="color" value={(form as any)[c.key] || '#000000'} onChange={e => set(c.key as keyof Agent, e.target.value)} />
-                        </div>
-                        <input className="input" value={(form as any)[c.key] || ''} onChange={e => set(c.key as keyof Agent, e.target.value)} style={{ flex: 1 }} />
+                      <div className="color-swatch" style={{ background: (form as any)[c.key] || '#000', width: '100%', height: '36px' }}>
+                        <input type="color" value={(form as any)[c.key] || '#000000'} onChange={e => set(c.key as keyof Agent, e.target.value)} />
                       </div>
                     </FormRow>
                   ))}
                 </div>
-                <FormRow label="Police d'écriture">
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                    {FONTS.map(f => (
-                      <button key={f} onClick={() => set('font_family', f)} style={{
-                        padding: '6px 14px', borderRadius: '8px', fontSize: '13px',
-                        cursor: 'pointer', fontFamily: f,
-                        background: form.font_family === f ? 'rgba(192,192,192,0.1)' : 'var(--bg-elevated)',
-                        border: form.font_family === f ? '1px solid rgba(192,192,192,0.3)' : '1px solid var(--border)',
-                        color: form.font_family === f ? '#C0C0C0' : '#606060',
-                      }}>{f}</button>
-                    ))}
-                  </div>
-                </FormRow>
-                <FormRow label="Icône du bouton">
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {ICONS.map(ic => (
-                      <button key={ic} onClick={() => set('button_icon', ic)} style={{
-                        width: '42px', height: '42px', borderRadius: '10px', fontSize: '20px',
-                        cursor: 'pointer', transition: 'all 0.15s',
-                        background: form.button_icon === ic ? 'rgba(192,192,192,0.15)' : 'var(--bg-elevated)',
-                        border: form.button_icon === ic ? '2px solid rgba(192,192,192,0.4)' : '1px solid var(--border)',
-                      }}>{ic}</button>
-                    ))}
-                  </div>
-                </FormRow>
-                <FormRow label="Position sur la page">
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    {POSITIONS.map(p => (
-                      <button key={p.value} onClick={() => set('position', p.value)} style={{
-                        padding: '8px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 600,
-                        cursor: 'pointer',
-                        background: form.position === p.value ? 'rgba(192,192,192,0.1)' : 'var(--bg-elevated)',
-                        border: form.position === p.value ? '1px solid rgba(192,192,192,0.3)' : '1px solid var(--border)',
-                        color: form.position === p.value ? '#C0C0C0' : '#606060',
-                      }}>{p.label}</button>
-                    ))}
-                  </div>
-                </FormRow>
-                <FormRow label="Border radius">
-                  <input className="input" value={form.border_radius || '16px'} onChange={e => set('border_radius', e.target.value)} placeholder="16px" style={{ maxWidth: '120px' }} />
-                </FormRow>
 
-                <SectionTitle>Effets Enterprise (Glassmorphism)</SectionTitle>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                  <FormRow label={`Flou (Glass Blur) : ${form.glass_blur}`}>
-                     <input type="range" min="0" max="30" step="1" value={parseInt(form.glass_blur || '10')} onChange={e => set('glass_blur', `${e.target.value}px`)}
-                        style={{ width: '100%', accentColor: '#C0C0C0' }} />
+                  <FormRow label={`Flou Glass : ${form.glass_blur}`}>
+                     <input type="range" min="0" max="30" value={parseInt(form.glass_blur || '10')} onChange={e => set('glass_blur', `${e.target.value}px`)} style={{ width: '100%' }} />
                   </FormRow>
-                  <FormRow label={`Opacité (Vitre) : ${form.glass_opacity}`}>
-                     <input type="range" min="0" max="1" step="0.05" value={parseFloat(form.glass_opacity || '0.1')} onChange={e => set('glass_opacity', e.target.value)}
-                        style={{ width: '100%', accentColor: '#C0C0C0' }} />
+                  <FormRow label={`Opacité : ${form.glass_opacity}`}>
+                     <input type="range" min="0" max="1" step="0.05" value={parseFloat(form.glass_opacity || '0.1')} onChange={e => set('glass_opacity', e.target.value)} style={{ width: '100%' }} />
                   </FormRow>
                 </div>
-                <FormRow label="Animation d'entrée">
-                  <select className="input" value={form.entrance_animation || 'fade-up'} onChange={e => set('entrance_animation', e.target.value)}>
-                    {ANIMATIONS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
-                  </select>
-                </FormRow>
-
-                <FormRow label="CSS personnalisé (avancé)">
-                  <textarea className="input" value={form.custom_css || ''} onChange={e => set('custom_css', e.target.value)}
-                    placeholder="#siby-btn { /* vos styles */ }" style={{ minHeight: '100px', fontFamily: 'DM Mono, monospace', fontSize: '12px' }} />
-                </FormRow>
               </div>
-            )}
-
-            {/* ── TAB: SKILLS ──────────────────────────── */}
-            {tab === 'skills' && (
-               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                 <SectionTitle>Capacités IA (Tools)</SectionTitle>
-                 <div className="card" style={{ padding: '20px', background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.1)' }}>
-                   <div style={{ fontSize: '14px', fontWeight: 700, color: '#C0C0C0', marginBottom: '4px' }}>⚡ Intelligence Autonome activée</div>
-                   <p style={{ fontSize: '13px', color: '#606060' }}>L'IA peut désormais détecter et exécuter des actions spécifiques en fonction du contexte.</p>
-                 </div>
-
-                 <div style={{ display: 'grid', gap: '12px' }}>
-                   {[
-                     { id: 'submit_lead', name: 'Capture Lead Pro', desc: 'Détection intelligente des noms, emails et contextes de contact.', enabled: true },
-                     { id: 'notify_admin', name: 'Alertes Admin', desc: 'Prévenir le propriétaire en cas de question urgente.', enabled: true },
-                     { id: 'google_calendar', name: 'Google Calendar (Bientôt)', desc: 'Prendre rendez-vous directement dans votre calendrier.', enabled: false },
-                     { id: 'gmail', name: 'Gmail Orders (Bientôt)', desc: 'Envoyer des emails de suivi personnalisés.', enabled: false },
-                   ].map(s => (
-                     <div key={s.id} style={{
-                       padding: '16px', borderRadius: '12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                       display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: s.enabled ? 1 : 0.5
-                     }}>
-                       <div>
-                         <div style={{ fontSize: '14px', fontWeight: 700, color: '#F0F0F0' }}>{s.name}</div>
-                         <div style={{ fontSize: '12px', color: '#606060' }}>{s.desc}</div>
-                       </div>
-                       <div style={{
-                         width: '40px', height: '22px', borderRadius: '20px',
-                         background: s.enabled ? '#22C55E' : '#333', position: 'relative', cursor: s.enabled ? 'pointer' : 'not-allowed'
-                       }}>
-                         <div style={{ width: '18px', height: '18px', background: '#fff', borderRadius: '50%', position: 'absolute', top: '2px', left: s.enabled ? '20px' : '2px', transition: 'all 0.2s' }}></div>
-                       </div>
-                     </div>
-                   ))}
-                 </div>
-               </div>
             )}
 
             {/* ── TAB: CONNECTORS ──────────────────────── */}
             {tab === 'connectors' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                <SectionTitle>Connecteurs Externes</SectionTitle>
-                <p style={{ fontSize: '14px', color: '#606060' }}>Connectez vos outils métier pour donner du pouvoir à votre agent.</p>
+                <SectionTitle>Connecteurs & Notifications</SectionTitle>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
-                  {[
-                    { id: 'google', name: 'Google Cloud', icon: '🌈', status: 'Non connecté' },
-                    { id: 'telegram', name: 'Telegram Bot', icon: '✈️', status: 'Configuré' },
-                    { id: 'whatsapp', name: 'WhatsApp (Twilio)', icon: '💬', status: 'Bientôt' },
-                    { id: 'emailjs', name: 'EmailJS Notifications', icon: '📨', status: 'Connecté' },
-                  ].map(c => (
-                    <div key={c.id} className="card" style={{ padding: '20px', textAlign: 'center', cursor: 'pointer', transition: 'transform 0.2s' }}>
-                      <div style={{ fontSize: '32px', marginBottom: '12px' }}>{c.icon}</div>
-                      <div style={{ fontSize: '15px', fontWeight: 700, color: '#F0F0F0' }}>{c.name}</div>
-                      <div style={{ fontSize: '11px', color: c.status === 'Connecté' || c.status === 'Configuré' ? '#22C55E' : '#606060', fontWeight: 600, marginTop: '4px' }}>{c.status}</div>
-                      <button className="btn-secondary" style={{ width: '100%', marginTop: '16px', fontSize: '12px' }}>Gérer</button>
+                <div className="card" style={{ padding: '20px', border: '1px solid rgba(0,136,204,0.2)', background: 'rgba(0,136,204,0.03)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                    <span style={{ fontSize: '24px' }}>✈️</span>
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#F0F0F0' }}>Telegram Bot</div>
+                      <div style={{ fontSize: '12px', color: '#606060' }}>Recevez les leads instantanément sur Telegram.</div>
                     </div>
-                  ))}
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <FormRow label="Bot Token">
+                      <input className="input" type="password" value={form.telegram_bot_token || ''} onChange={e => set('telegram_bot_token', e.target.value)} placeholder="123456:ABC-DEF..." />
+                    </FormRow>
+                    <FormRow label="Chat ID (votre ID ou groupe)">
+                      <input className="input" value={form.telegram_chat_id || ''} onChange={e => set('telegram_chat_id', e.target.value)} placeholder="12345678" />
+                    </FormRow>
+                  </div>
+                </div>
+
+                <div className="card" style={{ padding: '20px', border: '1px solid rgba(34,197,94,0.2)', background: 'rgba(34,197,94,0.03)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                    <span style={{ fontSize: '24px' }}>💬</span>
+                    <div>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#F0F0F0' }}>WhatsApp (Twilio)</div>
+                      <div style={{ fontSize: '12px', color: '#606060' }}>Connectez votre numéro métier WhatsApp.</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <FormRow label="Numéro WhatsApp">
+                      <input className="input" value={form.whatsapp_phone || ''} onChange={e => set('whatsapp_phone', e.target.value)} placeholder="+33612345678" />
+                    </FormRow>
+                    <FormRow label="Clé API / Token">
+                      <input className="input" type="password" value={form.whatsapp_api_key || ''} onChange={e => set('whatsapp_api_key', e.target.value)} placeholder="Clé secrète WhatsApp..." />
+                    </FormRow>
+                  </div>
+                </div>
+
+                <div className="card" style={{ padding: '20px' }}>
+                   <ToggleRow label="Activer les notifications EmailJS" checked={!!form.email_capture_enabled} onChange={v => set('email_capture_enabled', v)} />
+                   {form.email_capture_enabled && (
+                     <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <FormRow label="Template ID">
+                          <input className="input" value={form.emailjs_template_id || ''} onChange={e => set('emailjs_template_id', e.target.value)} />
+                        </FormRow>
+                     </div>
+                   )}
                 </div>
               </div>
             )}
@@ -776,11 +742,15 @@ export default function AgentFormPage() {
                     padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px',
                     background: `linear-gradient(135deg, ${form.primary_color || '#0A0A0A'}, #1e1e1e)`,
                   }}>
-                    <div style={{
-                      width: '36px', height: '36px', borderRadius: '50%',
-                      background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center',
-                      justifyContent: 'center', fontSize: '18px',
-                    }}>{form.button_icon || '🤖'}</div>
+                    {form.avatar_url ? (
+                      <img src={form.avatar_url} alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
+                    ) : (
+                      <div style={{
+                        width: '36px', height: '36px', borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', fontSize: '18px',
+                      }}>{form.button_icon || '🤖'}</div>
+                    )}
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{form.chat_title || 'Assistant'}</div>
                       <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -795,7 +765,11 @@ export default function AgentFormPage() {
                   <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px', minHeight: '200px' }}>
                     {/* Bot welcome message */}
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-                      <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', flexShrink: 0 }}>{form.button_icon || '🤖'}</div>
+                      {form.avatar_url ? (
+                         <img src={form.avatar_url} alt="B" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                      ) : (
+                         <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', flexShrink: 0 }}>{form.button_icon || '🤖'}</div>
+                      )}
                       <div style={{
                         padding: '10px 14px', borderRadius: '14px 14px 14px 4px', fontSize: '12.5px', lineHeight: 1.5,
                         background: form.widget_theme === 'light' ? '#F0F0F0' : '#1A1A1A',
@@ -817,7 +791,11 @@ export default function AgentFormPage() {
 
                     {/* Bot reply */}
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
-                      <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', flexShrink: 0 }}>{form.button_icon || '🤖'}</div>
+                      {form.avatar_url ? (
+                         <img src={form.avatar_url} alt="B" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                      ) : (
+                         <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', flexShrink: 0 }}>{form.button_icon || '🤖'}</div>
+                      )}
                       <div>
                         <div style={{
                           padding: '10px 14px', borderRadius: '14px 14px 14px 4px', fontSize: '12.5px', lineHeight: 1.5,

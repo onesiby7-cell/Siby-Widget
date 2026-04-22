@@ -97,6 +97,11 @@ export interface Agent {
   created_at: string;
   updated_at: string;
   client_id?: string;
+  avatar_url?: string;
+  telegram_bot_token?: string;
+  telegram_chat_id?: string;
+  whatsapp_phone?: string;
+  whatsapp_api_key?: string;
   ask_phone?: boolean;
   ask_company?: boolean;
   ask_website?: boolean;
