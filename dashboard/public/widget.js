@@ -73,9 +73,16 @@
     }
   }
 
+  function optimizeImageUrl(url, size = 100) {
+    if (!url || !url.includes("supabase.co")) return url;
+    // Standard Enterprise : Transformation à la volée WebP + Resize
+    return `${url}?width=${size}&height=${size}&resize=contain&format=webp`;
+  }
+
   function getTemplate(cfg) {
+    const optimizedAvatar = optimizeImageUrl(cfg.avatar_url, 120);
     const avatarHtml = cfg.avatar_url 
-      ? `<img src="${cfg.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
+      ? `<img src="${optimizedAvatar}" loading="lazy" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`
       : (cfg.button_icon || "🤖");
 
     return `

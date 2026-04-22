@@ -16,7 +16,16 @@ Transformer un simple widget de chat en une **plateforme agentique de luxe**, ca
 *   **Le Design Spotlight** : L'implémentation du `Ctrl+K` et des effets de flou qui ont donné au Dashboard son aspect "Senior Dev/Enterprise".
 
 ## 💎 La Révolution Platinum (AgentIQ)
-*   **La Bataille du SSR** : Nous avons migré tout le système vers `@supabase/ssr`. Ce fut une lutte contre les erreurs de "Server Headers", mais nous avons triomphé en isolant parfaitement le code client du code serveur.
+### La Révolution Platinum
+- **Migration SSR** : Passage à `@supabase/ssr` pour une sécurité et une gestion des sessions robustes.
+- **Canvas Designer** : Interface visuelle pour la customisation interactive.
+- **AgentIQ v2** : IA curieuse et proactive basée sur Llama 3.1 70B avec support Tool Calling.
+
+### Infrastructure & Performance "Elite"
+- **Object Storage** : Utilisation de Supabase Storage (S3-compatible) pour une disponibilité mondiale.
+- **Image Intelligence** : Implémentation du format WebP et du redimensionnement dynamique via CDN pour un chargement instantané (< 100ms sur mobile).
+- **Sécurité RLS** : Protection des assets par isolation Row Level Security.
+- **Branding Résilient** : Système de fallback CSS en cas d'absence d'assets physiques.
 *   **Le Canvas Studio** : La transformation du Dashboard en un éditeur visuel où le logo client devient le cœur de l'interface.
 *   **Le Cercle Social** : L'adoption du design "TikTok/WhatsApp" pour les avatars, rendant l'IA plus humaine et accessible.
 *   **La Victoire du JWS** : La résolution des erreurs d'upload grâce à l'identification des bonnes clés API, confirmant que la rigueur bat toujours la précipitation.
