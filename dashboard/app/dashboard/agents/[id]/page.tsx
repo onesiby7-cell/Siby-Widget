@@ -95,17 +95,26 @@ export default function AgentFormPage() {
     if (!file) return;
     
     setUploading(true);
-    const client = createClient(); // Utiliser un client frais pour l'upload
+    const client = createClient();
+    const keyPrefix = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.substring(0, 5);
+    console.log(`[Debug] Uploading with key prefix: ${keyPrefix}...`);
+    
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `logos/${fileName}`;
     
     const { error: uploadError } = await client.storage
       .from('agent-assets')
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
       
     if (uploadError) {
-      setError("Erreur d'upload : " + uploadError.message);
+      console.error('Erreur Storage:', uploadError);
+      alert(`Erreur d'upload : ${uploadError.message}. (Astuce: Vérifiez que la clé commence par "eyJ" dans Vercel)`);
+      setUploading(false);
+      return;
     } else {
       const { data } = supabase.storage.from('agent-assets').getPublicUrl(filePath);
       // 🔥 Ajout d'un timestamp (?t=...) pour forcer le rafraîchissement du logo par le navigateur (Cache Flush)
