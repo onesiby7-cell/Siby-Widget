@@ -1,6 +1,15 @@
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
-export const createClient = () => createClientComponentClient();
+export const createClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
+  
+  if (supabaseUrl === 'https://placeholder.supabase.co') {
+    console.warn('⚠️ ATTENTION: NEXT_PUBLIC_SUPABASE_URL manquant dans l environnement.');
+  }
+  
+  return createClientComponentClient();
+};
 
 // Server client — only call this from Server Components / Route Handlers
 export async function createServerClient() {
