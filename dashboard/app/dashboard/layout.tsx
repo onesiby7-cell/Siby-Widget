@@ -106,7 +106,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="p-6 flex items-center justify-between">
            {!collapsed && (
              <Link href="/dashboard" className="flex items-center gap-3">
-               <img src="/logo.png" alt="Siby" className="w-8 h-8 opacity-80" />
+               {/* 💎 PLATINUM LOGO FALLBACK */}
+               <div style={{
+                  width: '32px', height: '32px', borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #10B981, #059669)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '18px', fontWeight: 900, color: '#000',
+                  boxShadow: '0 4px 12px rgba(16,185,129,0.2)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  flexShrink: 0
+                }}>S</div>
                <span className="font-extrabold text-xl tracking-tighter italic color-primary">SIBY <span className="text-muted not-italic font-light">SAAS</span></span>
              </Link>
            )}
@@ -141,7 +150,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main content */}
       <main className="flex-1 overflow-y-auto flex flex-col">
         <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur-xl border-b border-border p-6 flex justify-between items-center h-20 shadow-sm">
-            <div className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">SIBY CLOUD PROTOCOL V5.1</div>
+            <div className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">SIBY CLOUD PROTOCOL V5.5</div>
             <div className="flex items-center gap-6">
                 <button onClick={toggleTheme} className="w-9 h-9 flex items-center justify-center rounded-xl bg-elevated border border-border hover:border-muted transition-all text-lg">
                   {theme === 'dark' ? '☀️' : '🌙'}
@@ -160,6 +169,5 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex-1 overflow-y-auto p-10 bg-base">{children}</div>
       </main>
     </div>
-
   );
 }
