@@ -1,6 +1,14 @@
-# ⚡ SIBY-WIDGET — SaaS d'Agents IA
+# ⚡ SIBY-WIDGET — AgentIQ Platinum Suite v4.0
 
-> Plateforme complète pour déployer des agents IA personnalisés sur n'importe quel site web avec une seule ligne de code.
+> La plateforme d'IA agentique la plus puissante, dotée d'un studio de design Canvas et d'une architecture SSR ultra-performante.
+
+---
+
+## 🌟 Nouveautés Platinum v4.0
+- **🎨 Canvas Design Studio** : Éditeur visuel temps réel avec support d'upload de logo (Style WhatsApp/TikTok).
+- **🧠 Intelligence AgentIQ** : IA proactive utilisant Llama 3.1 70B, capable de curiosité et de relance automatique.
+- **🛡️ Architecture SSR (@supabase/ssr)** : Migration complète vers le standard moderne de Supabase pour une sécurité et une vitesse accrues.
+- **📱 Connecteurs Réels** : Intégration Telegram et WhatsApp Twilio active pour des notifications leads instantanées.
 
 ---
 
@@ -13,15 +21,14 @@ npm install
 ```
 
 ### 2. Configurer les variables d'environnement
-```bash
-cp .env.example .env.local
-# Puis éditez .env.local avec vos vraies valeurs
-```
+Créez un fichier `.env` avec :
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Key Anon Supabase)
 
 ### 3. Lancer le dashboard
 ```bash
 npm run dev
-# → http://localhost:3000
+# → http://localhost:3001
 ```
 
 ---
@@ -29,137 +36,29 @@ npm run dev
 ## ⚙️ Configuration complète
 
 ### A. Supabase (Base de données)
+1. Exécutez le script SQL complet dans votre console Supabase.
+2. Créez un Bucket de stockage nommé `agent-assets` (Public).
 
-1. Créez un projet sur [supabase.com](https://supabase.com)
-2. Allez dans **SQL Editor** et exécutez le fichier :
-   ```
-   supabase/migrations/001_init.sql
-   ```
-3. Copiez votre **URL** et **anon key** → `.env.local`
-
-### B. Supabase Edge Function
-
-1. Installez le CLI Supabase :
-   ```bash
-   npm install -g supabase
-   supabase login
-   supabase link --project-ref YOUR_PROJECT_REF
-   ```
-
-2. Définissez les secrets :
-   ```bash
-   supabase secrets set GROQ_API_KEY=gsk_votre_clé_groq
-   ```
-
-3. Déployez la fonction :
-   ```bash
-   supabase functions deploy chat-agent
-   ```
-
-4. Récupérez l'URL de la fonction :
-   ```
-   https://YOUR_PROJECT.supabase.co/functions/v1/chat-agent
-   ```
-   → Ajoutez-la dans `.env.local` → `NEXT_PUBLIC_EDGE_FUNCTION_URL`
+### B. Supabase Edge Functions
+Déployez l'intelligence avec la commande :
+```bash
+npx supabase functions deploy chat-agent
+```
 
 ### C. Groq API
-
-1. Créez un compte sur [console.groq.com](https://console.groq.com)
-2. Générez une clé API
-3. Option 1 : Clé globale → `supabase secrets set GROQ_API_KEY=gsk_...`
-4. Option 2 : Clé par agent → Dans le dashboard, onglet "IA & Prompt" de chaque agent
-
-### D. EmailJS (Notifications leads)
-
-1. Créez un compte sur [emailjs.com](https://emailjs.com)
-2. Créez un **Service** (Gmail, Outlook, etc.)
-3. Créez un **Template** avec les variables :
-   - `{{agent_name}}`, `{{lead_name}}`, `{{lead_email}}`
-   - `{{lead_phone}}`, `{{conversation}}`, `{{date}}`
-4. Copiez Service ID, Template ID, Public Key → Dashboard agent → Onglet "EmailJS"
+Utilisez une clé `GROQ_API_KEY` dans vos secrets Supabase ou par agent dans le Dashboard.
 
 ---
 
-## 📁 Structure du projet
-
-```
-siby-widget/
-├── dashboard/                    # Next.js 14 App Router
-│   ├── app/
-│   │   ├── page.tsx              # Landing page
-│   │   ├── auth/
-│   │   │   ├── login/            # Connexion
-│   │   │   └── register/         # Inscription
-│   │   └── dashboard/
-│   │       ├── layout.tsx        # Sidebar navigation
-│   │       ├── page.tsx          # Vue d'ensemble
-│   │       ├── agents/           # Gestion agents
-│   │       │   ├── page.tsx      # Liste
-│   │       │   ├── new/          # Création
-│   │       │   └── [id]/         # Édition
-│   │       ├── leads/            # CRM leads
-│   │       ├── analytics/        # Graphiques
-│   │       ├── playground/       # Test agents
-│   │       ├── templates/        # Templates IA
-│   │       ├── webhooks/         # Logs webhooks
-│   │       ├── notifications/    # Notifications
-│   │       ├── team/             # Gestion équipe
-│   │       ├── billing/          # Plans & facturation
-│   │       └── settings/         # Paramètres compte
-│   ├── lib/
-│   │   └── supabase.ts           # Client + types
-│   └── globals.css               # Design system métal
-│
-├── widget/
-│   └── widget.js                 # Widget universel (Vanilla JS)
-│
-└── supabase/
-    ├── functions/
-    │   └── chat-agent/
-    │       └── index.ts          # Edge Function sécurisée
-    └── migrations/
-        └── 001_init.sql          # Schema complet + RLS
-```
-
----
-
-## 🎯 Fonctionnalités Dashboard (10+)
+## 🎯 Fonctionnalités Dashboard Platinum
 
 | # | Feature | Description |
 |---|---------|-------------|
-| 1 | **Multi-agents** | Créez et gérez autant d'agents que votre plan le permet |
-| 2 | **Vue d'ensemble** | Stats temps réel + graphiques d'activité |
-| 3 | **CRM Leads** | Gestion leads avec statuts Kanban + export CSV |
-| 4 | **Analytics** | Métriques détaillées : sessions, tokens, latence, devices |
-| 5 | **Playground** | Testez vos agents en temps réel avec latence/tokens visible |
-| 6 | **Templates** | 5 templates pré-configurés par industrie |
-| 7 | **Webhooks** | Logs complets + payload viewer + HMAC-SHA256 |
-| 8 | **Notifications** | Centre de notifications avec badge compteur |
-| 9 | **Gestion équipe** | Invitations avec rôles Admin/Éditeur/Viewer |
-| 10 | **Facturation** | Plans Free/Starter/Pro/Enterprise + barre quota |
-| 11 | **Aperçu widget** | Preview live lors de la configuration design |
-| 12 | **Sidebar collapsible** | Navigation compacte ou étendue |
-
----
-
-## ⚡ Fonctionnalités Système (10+)
-
-| # | Feature | Description |
-|---|---------|-------------|
-| 1 | **Isolation totale** | RLS Supabase — chaque client isolé |
-| 2 | **Clé Groq sécurisée** | Jamais exposée côté client |
-| 3 | **Détection lead IA** | Extraction email/tél/nom automatique |
-| 4 | **Rate limiting** | Configurable par agent (N messages/heure) |
-| 5 | **Filtrage domaines** | Whitelist de domaines autorisés |
-| 6 | **Mots bloqués** | Blacklist configurable par agent |
-| 7 | **Webhooks signés** | HMAC-SHA256 pour sécurité maximale |
-| 8 | **Historique session** | localStorage + persistance server-side |
-| 9 | **Multi-modèles Groq** | Llama3 8B/70B, Mixtral, Gemma |
-| 10 | **Analytics temps réel** | Sessions, messages, tokens, latence |
-| 11 | **Quick replies** | Boutons de réponse rapide configurables |
-| 12 | **CSS custom** | Override CSS complet par agent |
-| 13 | **Auto-resize textarea** | Widget adaptatif |
-| 14 | **Responsive widget** | Mobile-first, bottom sheet sur mobile |
+| 1 | **Canvas Studio** | Aperçu live du widget avec personnalisation visuelle poussée |
+| 2 | **Upload Assets** | Support des logos et avatars avec détection circulaire auto |
+| 3 | **AgentIQ Brain** | Personnalité proactive et curieuse pour la capture de leads |
+| 4 | **Connecteurs** | Formulaires Telegram/WhatsApp configurables par agent |
+| 5 | **Typesafety** | Architecture Typescript intégrale avec gestion SSR |
 
 ---
 
@@ -168,7 +67,7 @@ siby-widget/
 ```html
 <!-- Collez avant </body> -->
 <script
-  src="https://YOUR_CDN/widget.js"
+  src="https://YOUR_DOMAIN/widget.js"
   data-agent-id="VOTRE_AGENT_ID"
   async
 ></script>
@@ -176,12 +75,11 @@ siby-widget/
 
 ---
 
-## 🎨 Design System
+## 🔒 Sécurité & Performance
 
-- **Palette** : Métal profond `#050505` → Argent `#C0C0C0` → Blanc `#F0F0F0`
-- **Police** : DM Sans (display) + DM Mono (code)
-- **Effets** : Glass morphism, gradients métal, grain noise, glow
-- **Animations** : CSS keyframes, spring physics
+- ✅ **SSR Ready** : Gestion fluide des cookies et sessions serveur.
+- ✅ **Privacy First** : Isolation totale des données via RLS.
+- ✅ **Optimized Assets** : Utilisation de Supabase Storage pour des logos ultra-légers.
 
 ---
 

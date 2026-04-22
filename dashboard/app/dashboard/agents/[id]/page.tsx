@@ -107,7 +107,9 @@ export default function AgentFormPage() {
       setError("Erreur d'upload : " + uploadError.message);
     } else {
       const { data } = supabase.storage.from('agent-assets').getPublicUrl(filePath);
-      set('avatar_url', data.publicUrl);
+      // 🔥 Ajout d'un timestamp (?t=...) pour forcer le rafraîchissement du logo par le navigateur (Cache Flush)
+      const freshUrl = `${data.publicUrl}?t=${Date.now()}`;
+      set('avatar_url', freshUrl);
       setSaved(false);
     }
     setUploading(false);
@@ -230,18 +232,29 @@ export default function AgentFormPage() {
                 <FormRow label="Description (interne)">
                   <input className="input" value={form.description || ''} onChange={e => set('description', e.target.value)} placeholder="Notes privées sur cet agent..." />
                 </FormRow>
-                <FormRow label="Statut">
+                <FormRow label="Statut de l'Agent (Contrôle d'accès)">
                   <div style={{ display: 'flex', gap: '8px' }}>
                     {(['active', 'inactive', 'draft'] as const).map(s => (
                       <button key={s} onClick={() => set('status', s)} style={{
-                        padding: '8px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600,
-                        cursor: 'pointer', transition: 'all 0.15s',
-                        background: form.status === s ? (s === 'active' ? 'rgba(34,197,94,0.15)' : 'rgba(192,192,192,0.1)') : 'var(--bg-elevated)',
-                        border: form.status === s ? (s === 'active' ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(192,192,192,0.2)') : '1px solid var(--border)',
-                        color: form.status === s ? (s === 'active' ? '#22C55E' : '#C0C0C0') : '#606060',
-                      }}>{s.charAt(0).toUpperCase() + s.slice(1)}</button>
+                        padding: '10px 20px', borderRadius: '12px', fontSize: '13px', fontWeight: 800,
+                        cursor: 'pointer', transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                        textTransform: 'uppercase', letterSpacing: '0.05em',
+                        background: form.status === s 
+                          ? (s === 'active' ? 'rgba(34,197,94,0.15)' : s === 'inactive' ? 'rgba(239,68,68,0.15)' : 'rgba(192,192,192,0.1)') 
+                          : 'rgba(255,255,255,0.02)',
+                        border: form.status === s 
+                          ? (s === 'active' ? '1px solid #22C55E' : s === 'inactive' ? '1px solid #EF4444' : '1px solid #C0C0C0') 
+                          : '1px solid rgba(255,255,255,0.05)',
+                        color: form.status === s 
+                          ? (s === 'active' ? '#22C55E' : s === 'inactive' ? '#EF4444' : '#C0C0C0') 
+                          : '#404040',
+                        boxShadow: form.status === s ? '0 4px 12px rgba(0,0,0,0.2)' : 'none',
+                      }}>
+                        {s === 'active' ? '● Actif' : s === 'inactive' ? '■ Stopé' : '○ Brouillon'}
+                      </button>
                     ))}
                   </div>
+                  <Hint>Mettez sur "Stopé" pour bloquer immédiatement l'accès à ce widget (ex: non-paiement).</Hint>
                 </FormRow>
                 <FormRow label="Titre de la fenêtre chat">
                   <input className="input" value={form.chat_title || ''} onChange={e => set('chat_title', e.target.value)} placeholder="Assistant" />

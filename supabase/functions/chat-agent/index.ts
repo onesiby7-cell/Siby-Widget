@@ -113,10 +113,19 @@ serve(async (req) => {
     const { agentId: postAgentId, message, sessionId, visitorId, history = [], metadata } = body;
     const startTime = Date.now();
 
+    // Récupération de l'agent (tous statuts confondus pour pouvoir agir intelligemment)
     const { data: agent, error: agentError } = await supabase
-      .from("agents").select("*").eq("id", postAgentId).eq("status", "active").single();
+      .from("agents").select("*").eq("id", postAgentId).single();
 
     if (agentError || !agent) return new Response(JSON.stringify({ error: "Agent non trouvé" }), { status: 404, headers: corsHeaders });
+
+    // 🔒 SÉCURITÉ : Vérification du blocage client (Paiement/Status)
+    if (agent.status !== 'active') {
+      return new Response(JSON.stringify({ 
+        reply: "🛡️ Ce service est temporairement suspendu ou en cours de configuration. Veuillez contacter l'administrateur si vous pensez qu'il s'agit d'une erreur.",
+        error: "AGENT_INACTIVE" 
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // Gestion de session
     let currentSessionId = sessionId;

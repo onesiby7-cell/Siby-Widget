@@ -12,6 +12,7 @@ const NAV = [
   { href: '/dashboard/clients', icon: '👥', label: 'Mes Clients' },
   { href: '/dashboard/conversations', icon: '📜', label: 'Conversations' },
   { href: '/dashboard/leads', icon: '🎯', label: 'Leads CRM' },
+  { href: '/dashboard/finances', icon: '💰', label: 'Finances' },
   { href: '/dashboard/analytics', icon: '📊', label: 'Analytics' },
   { href: '/dashboard/playground', icon: '🧪', label: 'Playground' },
   { href: '/dashboard/templates', icon: '📋', label: 'Templates' },

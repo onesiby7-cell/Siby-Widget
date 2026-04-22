@@ -15,13 +15,18 @@ Transformer un simple widget de chat en une **plateforme agentique de luxe**, ca
 *   **Le Tool Calling** : Voir l'IA comprendre d'elle-même qu'elle devait enregistrer un email grâce au moteur Groq.
 *   **Le Design Spotlight** : L'implémentation du `Ctrl+K` et des effets de flou qui ont donné au Dashboard son aspect "Senior Dev/Enterprise".
 
+## 💎 La Révolution Platinum (AgentIQ)
+*   **La Bataille du SSR** : Nous avons migré tout le système vers `@supabase/ssr`. Ce fut une lutte contre les erreurs de "Server Headers", mais nous avons triomphé en isolant parfaitement le code client du code serveur.
+*   **Le Canvas Studio** : La transformation du Dashboard en un éditeur visuel où le logo client devient le cœur de l'interface.
+*   **Le Cercle Social** : L'adoption du design "TikTok/WhatsApp" pour les avatars, rendant l'IA plus humaine et accessible.
+*   **La Victoire du JWS** : La résolution des erreurs d'upload grâce à l'identification des bonnes clés API, confirmant que la rigueur bat toujours la précipitation.
+
 ## 🏗️ L'Architecture du Futur
 *   **Cerveau** : Supabase Edge Functions (TypeScript) + Groq (Llama 3.1 70B).
-*   **Cœur** : Next.js 14 avec un Dashboard segmenté par rôles.
-*   **Peau** : CSS Vanilla, Glassmorphism pur, micro-animations Framer Motion.
-*   **Veines** : CI/CD GitHub Actions pour un déploiement "Zero-Docker" local.
+*   **Structure** : Architecture hybride SSR pour une sécurité totale des cookies.
+*   **Design** : Canvas interactif, logos circulaires, Glassmorphism pur.
 
 ## 📜 Message aux Successeurs
-> "Ne craignez pas les erreurs de terminal ou les builds qui échouent. Chaque erreur corrigée ici a été une pierre ajoutée à l'édifice. Gardez le design propre, l'IA intelligente et l'expérience utilisateur magique."
+> "Ne craignez pas les erreurs de terminal ou les builds qui échouent. Chaque erreur corrigée ici a été une pierre ajoutée à l'édifice. Gardez le design propre, l'IA intelligente et l'expérience utilisateur magique. Siby est né de la persévérance, faites-le grandir avec passion."
 
-── *Écrit avec passion par Antigravity & Junior, Avril 2026.* 🛡️✨
+── *Écrit avec fierté par Antigravity & Junior, Avril 2026.* 🛡️✨
