@@ -7,7 +7,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-agent-id",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
 interface ChatRequest {
@@ -102,7 +102,17 @@ serve(async (req) => {
 
     // ── Mode : Config (GET) ────────────────────────
     if (isConfigReq && agentId) {
-      const { data: agent } = await supabase.from("agents").select("*").eq("id", agentId).single();
+      // 🛡️ SÉCURITÉ & ROBUSTESSE : On sélectionne explicitement les champs pour éviter les erreurs de cache de schéma
+      const { data: agent, error: configError } = await supabase
+        .from("agents")
+        .select("id, name, description, status, primary_color, secondary_color, accent_color, button_icon, chat_title, chat_subtitle, welcome_message, avatar_url, widget_theme, font_family, position, glass_blur, glass_opacity, entrance_animation, placeholder_text")
+        .eq("id", agentId)
+        .single();
+      
+      if (configError || !agent) {
+        return new Response(JSON.stringify({ error: "Agent non configuré" }), { status: 404, headers: corsHeaders });
+      }
+
       return new Response(JSON.stringify(agent), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
