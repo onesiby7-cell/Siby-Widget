@@ -42,8 +42,13 @@
   }
 
   async function init() {
+    console.log("[Siby] Initialisation de l'agent:", AGENT_ID);
     const cfg = await fetchConfig();
-    if (!cfg) return;
+    if (!cfg) {
+      console.warn("[Siby] ⚠️ Impossible de charger la configuration. Vérifiez que l'ID de l'agent est correct et actif.");
+      return;
+    }
+    console.log("[Siby] ✅ Configuration chargée pour:", cfg.name);
 
     const host = document.createElement("div");
     host.id = "siby-widget-root";
