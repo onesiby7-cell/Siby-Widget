@@ -374,22 +374,23 @@ export default function AgentFormPage() {
                   border: '1px solid var(--border)', display: 'flex', gap: '20px', alignItems: 'center'
                 }}>
                   <div style={{ 
-                    width: '100px', height: '100px', borderRadius: '12px', 
-                    background: 'var(--bg-elevated)', border: '2px dashed var(--border)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
+                    width: '100px', height: '100px', borderRadius: '50%', 
+                    background: 'var(--bg-elevated)', border: '2px solid var(--border)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
                   }}>
                     {form.avatar_url ? (
-                      <img src={form.avatar_url} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      <img src={form.avatar_url} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
                       <span style={{ fontSize: '24px' }}>🖼️</span>
                     )}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#F0F0F0', marginBottom: '4px' }}>Logo de l'agent</div>
-                    <p style={{ fontSize: '12px', color: '#606060', marginBottom: '12px' }}>Format PNG ou SVG conseillé. Apparaîtra dans l'en-tête du widget.</p>
+                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#F0F0F0', marginBottom: '4px' }}>Photo de profil / Logo</div>
+                    <p style={{ fontSize: '12px', color: '#606060', marginBottom: '12px' }}>Style TikTik/WhatsApp. Les images sont automatiquement recadrées en cercle.</p>
                     <input type="file" accept="image/*" onChange={handleLogoUpload} style={{ display: 'none' }} id="logo-upload" />
                     <label htmlFor="logo-upload" className="btn-secondary" style={{ cursor: 'pointer', display: 'inline-block', fontSize: '12px' }}>
-                      {uploading ? '⏳ Envoi...' : '📤 Choisir un logo'}
+                      {uploading ? '⏳ Envoi...' : '📤 Changer la photo'}
                     </label>
                   </div>
                 </div>
@@ -743,7 +744,7 @@ export default function AgentFormPage() {
                     background: `linear-gradient(135deg, ${form.primary_color || '#0A0A0A'}, #1e1e1e)`,
                   }}>
                     {form.avatar_url ? (
-                      <img src={form.avatar_url} alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
+                      <img src={form.avatar_url} alt="Logo" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid rgba(255,255,255,0.2)' }} />
                     ) : (
                       <div style={{
                         width: '36px', height: '36px', borderRadius: '50%',
@@ -766,7 +767,7 @@ export default function AgentFormPage() {
                     {/* Bot welcome message */}
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
                       {form.avatar_url ? (
-                         <img src={form.avatar_url} alt="B" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                         <img src={form.avatar_url} alt="B" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
                       ) : (
                          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', flexShrink: 0 }}>{form.button_icon || '🤖'}</div>
                       )}
@@ -792,7 +793,7 @@ export default function AgentFormPage() {
                     {/* Bot reply */}
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
                       {form.avatar_url ? (
-                         <img src={form.avatar_url} alt="B" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover' }} />
+                         <img src={form.avatar_url} alt="B" style={{ width: '24px', height: '24px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
                       ) : (
                          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', flexShrink: 0 }}>{form.button_icon || '🤖'}</div>
                       )}
