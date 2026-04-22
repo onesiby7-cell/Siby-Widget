@@ -95,11 +95,12 @@ export default function AgentFormPage() {
     if (!file) return;
     
     setUploading(true);
+    const client = createClient(); // Utiliser un client frais pour l'upload
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `logos/${fileName}`;
     
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await client.storage
       .from('agent-assets')
       .upload(filePath, file);
       
