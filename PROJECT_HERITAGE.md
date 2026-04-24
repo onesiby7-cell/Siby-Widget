@@ -30,6 +30,21 @@ Transformer un simple widget de chat en une **plateforme agentique de luxe**, ca
 *   **Le Cercle Social** : L'adoption du design "TikTok/WhatsApp" pour les avatars, rendant l'IA plus humaine et accessible.
 *   **La Victoire du JWS** : La résolution des erreurs d'upload grâce à l'identification des bonnes clés API, confirmant que la rigueur bat toujours la précipitation.
 
+## 🛡️ Les Lois de l'Héritage (Immunité CSS & Z-Index)
+
+### 1. Le "Bouclier" de l'Héritage (Encapsulation totale)
+Puisque tu utilises un Canvas Designer et du Glassmorphism, ton CSS est précieux. Pour qu'il ne soit jamais corrompu par le site du client :
+*   **L'Iframe "Portail"** : Ton widget ne doit pas être injecté en tant que div. Il doit être une iframe pointant vers une route dédiée de ton app Next.js (ex: `siby-widget.vercel.app/embed/[client-id]`).
+*   **Communication PostMessage** : Utilise l'API `window.postMessage` pour faire communiquer le site hôte et ton iframe (par exemple pour ouvrir/fermer le chat).
+
+### 2. Branding Résilient & Fallback
+Tu mentionnes un fallback CSS. C'est crucial.
+Assure-toi que ton script d'injection (le `loader.js`) détecte si le site hôte a des propriétés CSS globales agressives (comme `img { max-width: 100%; }` qui pourrait casser tes avatars circulaires) et applique un CSS Reset local uniquement à l'intérieur du conteneur de ton widget.
+
+### 3. Gestion du Z-Index Dynamique
+Parfois, même un `z-index: 999999` ne suffit pas si le client utilise des contextes d'empilement isolés.
+*   **Astuce Pro** : Ton script d'injection doit toujours placer le nœud du widget comme enfant direct de `<body>`, jamais à l'intérieur d'une autre div pour éviter les contraintes de parenté.
+
 ## 🏗️ L'Architecture du Futur
 *   **Cerveau** : Supabase Edge Functions (TypeScript) + Groq (Llama 3.1 70B).
 *   **Structure** : Architecture hybride SSR pour une sécurité totale des cookies.
