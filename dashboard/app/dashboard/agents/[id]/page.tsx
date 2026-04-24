@@ -455,6 +455,36 @@ export default function AgentFormPage() {
                      <input type="range" min="0" max="1" step="0.05" value={parseFloat(form.glass_opacity || '0.1')} onChange={e => set('glass_opacity', e.target.value)} style={{ width: '100%' }} />
                   </FormRow>
                 </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <FormRow label="Style du Bouton">
+                    <select className="input" value={form.animation_style || 'float'} onChange={e => set('animation_style', e.target.value)}>
+                      <option value="float">Flottant (Zen)</option>
+                      <option value="pulse">Pulsation (Glow)</option>
+                      <option value="shake">Secousse (Attention)</option>
+                      <option value="none">Statique</option>
+                    </select>
+                  </FormRow>
+
+                  <FormRow label="Forme du Logo (TikTok Style)">
+                    <select className="input" value={form.logo_shape || 'circle'} onChange={e => set('logo_shape', e.target.value)}>
+                      <option value="circle">Cercle Parfait</option>
+                      <option value="square">Carré Moderne</option>
+                      <option value="rounded">Arrondi (Squircle)</option>
+                    </select>
+                  </FormRow>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-surface rounded-xl border border-border" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div>
+                    <div className="text-sm font-bold text-primary">Rainbow Glow Mode 🌈</div>
+                    <div className="text-[10px] text-muted uppercase font-black tracking-wider">Feature Surprise Platinum</div>
+                  </div>
+                  <label className="toggle">
+                    <input type="checkbox" checked={form.rainbow_glow || false} onChange={e => set('rainbow_glow', e.target.checked)} />
+                    <span className="toggle-slider"></span>
+                  </label>
+                </div>
               </div>
             )}
 

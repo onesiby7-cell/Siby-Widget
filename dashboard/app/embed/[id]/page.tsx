@@ -94,11 +94,54 @@ export default function EmbedPage() {
           -webkit-backdrop-filter: blur(${glassBlur});
           border: 1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
         }
+        
+        /* Surprise Feature: Rainbow Glow */
+        .rainbow-glow {
+          position: relative;
+        }
+        .rainbow-glow::after {
+          content: '';
+          position: absolute;
+          inset: -3px;
+          background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+          background-size: 400%;
+          z-index: -1;
+          filter: blur(8px);
+          animation: rainbow 20s linear infinite;
+          border-radius: inherit;
+          opacity: ${agent.rainbow_glow ? '0.7' : '0'};
+        }
+
+        @keyframes rainbow {
+          0% { background-position: 0 0; }
+          50% { background-position: 400% 0; }
+          100% { background-position: 0 0; }
+        }
+
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(20px) scale(0.95); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
+        
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+          100% { transform: translateY(0px); }
+        }
+
+        @keyframes pulse-glow {
+          0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+          70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
         .animate-fade-up { animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-pulse-glow { animation: pulse-glow 2s infinite; }
+        
+        .logo-shape-circle { border-radius: 50% !important; }
+        .logo-shape-square { border-radius: 12px !important; }
+        .logo-shape-rounded { border-radius: 20px !important; }
       `}</style>
 
       {/* Chat Window */}
@@ -186,7 +229,11 @@ export default function EmbedPage() {
       {/* Launcher */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="pointer-events-auto w-16 h-16 rounded-full shadow-2xl flex items-center justify-center transition-all duration-500 hover:scale-110 active:scale-95 border border-white/10 overflow-hidden group"
+        className={`pointer-events-auto w-16 h-16 shadow-2xl flex items-center justify-center transition-all duration-500 hover:scale-110 active:scale-95 border border-white/10 overflow-hidden group 
+          ${agent.logo_shape ? `logo-shape-${agent.logo_shape}` : 'rounded-full'} 
+          ${agent.rainbow_glow ? 'rainbow-glow' : ''} 
+          ${agent.animation_style === 'float' ? 'animate-float' : ''} 
+          ${agent.animation_style === 'pulse' ? 'animate-pulse-glow' : ''}`}
         style={{ background: `linear-gradient(135deg, ${primaryColor}, #1a1a1a)` }}
       >
         {isOpen ? (
@@ -194,7 +241,7 @@ export default function EmbedPage() {
         ) : (
           <div className="w-full h-full flex items-center justify-center">
              {agent.avatar_url ? (
-                <img src={agent.avatar_url} className="w-full h-full object-cover group-hover:scale-110 transition-transform" alt="Launcher" />
+                <img src={agent.avatar_url} className={`w-full h-full object-cover group-hover:scale-110 transition-transform ${agent.logo_shape ? `logo-shape-${agent.logo_shape}` : 'rounded-full'}`} alt="Launcher" />
              ) : (
                 <span className="text-3xl">{agent.button_icon || '🤖'}</span>
              )}

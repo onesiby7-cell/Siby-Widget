@@ -21,17 +21,17 @@
     // Platinum Layout Security
     Object.assign(container.style, {
       position: 'fixed',
-      bottom: '20px',
-      right: '20px',
-      width: '80px',
-      height: '80px',
+      bottom: '24px',
+      right: '24px',
+      width: '74px',
+      height: '74px',
       zIndex: '2147483647',
-      transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+      transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'flex-end',
       justifyContent: 'flex-end',
-      pointerEvents: 'none' // Allow clicks to pass through background
+      pointerEvents: 'none'
     });
 
     // 2. Create the Iframe (The "Portal")
@@ -41,6 +41,7 @@
     iframe.title = "Siby AI Assistant";
     iframe.scrolling = "no";
     iframe.frameBorder = "0";
+    iframe.allowTransparency = "true";
     
     Object.assign(iframe.style, {
       width: '100%',
@@ -48,7 +49,10 @@
       border: 'none',
       background: 'transparent',
       colorScheme: 'light dark',
-      pointerEvents: 'auto' // Re-enable clicks for the iframe itself
+      pointerEvents: 'auto',
+      borderRadius: '50%', // TikTok Style by default for launcher
+      overflow: 'hidden',
+      boxShadow: '0 12px 40px rgba(0,0,0,0.25)'
     });
 
     container.appendChild(iframe);
