@@ -475,9 +475,12 @@ export default function AgentFormPage() {
                     <FormRow label="Bot Token">
                       <input className="input" type="password" value={form.telegram_bot_token || ''} onChange={e => set('telegram_bot_token', e.target.value)} placeholder="123456:ABC-DEF..." />
                     </FormRow>
-                    <FormRow label="Chat ID (votre ID ou groupe)">
-                      <input className="input" value={form.telegram_chat_id || ''} onChange={e => set('telegram_chat_id', e.target.value)} placeholder="12345678" />
-                    </FormRow>
+                    <div style={{ 
+                      padding: '10px 14px', borderRadius: '10px', background: 'rgba(0,136,204,0.05)', 
+                      border: '1px solid rgba(0,136,204,0.1)', fontSize: '12px', color: '#0088CC' 
+                    }}>
+                      💡 <strong>Configuration simplifiée :</strong> Plus besoin d'ID ! Envoyez simplement un message (ex: "/start") à votre bot sur Telegram, et Siby détectera automatiquement où envoyer les leads.
+                    </div>
                   </div>
                 </div>
 

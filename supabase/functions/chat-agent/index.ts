@@ -209,13 +209,32 @@ Utilise l'outil 'submit_lead' dès que tu as des infos de contact précises.`;
             
             const notificationMsg = `🚀 Nouveau Lead pour ${agent.name} !\n\n👤 Nom: ${args.name || "N/A"}\n📧 Email: ${args.email}\n📱 Tel: ${args.phone || "N/A"}\n📝 Notes: ${args.notes || "Aucune"}`;
 
-            // 1. Notification Telegram (SI CONFIGURÉ)
-            if (agent.telegram_bot_token && agent.telegram_chat_id) {
+            // 1. Notification Telegram (AUTO-DISCOVERY PLATINUM)
+            if (agent.telegram_bot_token) {
                try {
-                 await fetch(`https://api.telegram.org/bot${agent.telegram_bot_token}/sendMessage`, {
-                   method: "POST", headers: { "Content-Type": "application/json" },
-                   body: JSON.stringify({ chat_id: agent.telegram_chat_id, text: notificationMsg })
-                 });
+                 let chatId = agent.telegram_chat_id;
+                 
+                 // Si l'ID est manquant, on tente de le découvrir via /getUpdates
+                 if (!chatId) {
+                   const tgUpdates = await fetch(`https://api.telegram.org/bot${agent.telegram_bot_token}/getUpdates?limit=5&offset=-1`).then(r => r.json());
+                   if (tgUpdates.ok && tgUpdates.result?.length > 0) {
+                     // On prend le dernier message reçu ou le dernier ajout au groupe
+                     const lastUpdate = tgUpdates.result[tgUpdates.result.length - 1];
+                     chatId = (lastUpdate.message?.chat?.id || lastUpdate.my_chat_member?.chat?.id)?.toString();
+                     
+                     if (chatId) {
+                       console.log(`[Siby] 📡 Auto-Discovery Telegram: New Chat ID found (${chatId}) for agent ${agent.id}`);
+                       await supabase.from("agents").update({ telegram_chat_id: chatId }).eq("id", agent.id);
+                     }
+                   }
+                 }
+
+                 if (chatId) {
+                   await fetch(`https://api.telegram.org/bot${agent.telegram_bot_token}/sendMessage`, {
+                     method: "POST", headers: { "Content-Type": "application/json" },
+                     body: JSON.stringify({ chat_id: chatId, text: notificationMsg })
+                   });
+                 }
                } catch (e) { console.error("Telegram Error:", e); }
             }
 
