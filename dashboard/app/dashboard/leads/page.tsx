@@ -32,7 +32,6 @@ export default function LeadsPage() {
     load();
   }, []);
 
-
   const updateStatus = async (id: string, status: string) => {
     await supabase.from('leads').update({ status }).eq('id', id);
     setLeads(prev => prev.map(l => l.id === id ? { ...l, status: status as Lead['status'] } : l));
@@ -54,105 +53,116 @@ export default function LeadsPage() {
   };
 
   return (
-    <div style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px' }}>
-        <div>
-          <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#F0F0F0', letterSpacing: '-0.5px' }}>Leads CRM</h1>
-          <p style={{ color: '#606060', fontSize: '13px', marginTop: '4px' }}>{leads.length} lead{leads.length > 1 ? 's' : ''} capturé{leads.length > 1 ? 's' : ''}</p>
+    <div className="space-y-10">
+      {/* Header Deck */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter">
+            Intelligence <span className="text-gradient">CRM</span>
+          </h1>
+          <p className="text-dim text-sm font-medium">Flux de prospects capturés en temps réel.</p>
         </div>
-        <button onClick={exportCSV} className="btn-secondary" style={{ fontSize: '13px' }}>
-          📥 Exporter CSV
+        <button onClick={exportCSV} className="btn-platinum shadow-xl shadow-white/10">
+          📥 Exporter (.CSV)
         </button>
       </div>
 
-      {/* Kanban stats */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', overflowX: 'auto' }}>
+      {/* KPI Row */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {Object.entries(STATUS_LABELS).map(([k, v]) => {
           const count = leads.filter(l => l.status === k).length;
+          const isActive = filter === k;
           return (
-            <div key={k} onClick={() => setFilter(filter === k ? 'all' : k)} style={{
-              padding: '10px 16px', borderRadius: '10px', cursor: 'pointer', flexShrink: 0,
-              background: filter === k ? 'rgba(255,255,255,0.06)' : 'var(--bg-surface)',
-              border: `1px solid ${filter === k ? 'rgba(255,255,255,0.1)' : 'var(--border)'}`,
-              transition: 'all 0.15s',
-            }}>
-              <div style={{ fontSize: '20px', fontWeight: 800, color: STATUS_COLORS[k] }}>{count}</div>
-              <div style={{ fontSize: '11px', color: '#606060', marginTop: '2px', whiteSpace: 'nowrap' }}>{v}</div>
+            <div 
+              key={k} 
+              onClick={() => setFilter(isActive ? 'all' : k)} 
+              className={`workspace-card !p-4 cursor-pointer transition-all duration-300 ${isActive ? 'ring-2 ring-accent bg-accent/5' : 'hover:bg-white/5'}`}
+            >
+              <div className="text-2xl font-black text-white mb-1">{count}</div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-ghost">{v}</div>
             </div>
           );
         })}
       </div>
 
-      {/* Search */}
-      <div style={{ marginBottom: '16px' }}>
-        <input className="input" placeholder="🔍 Rechercher par nom, email, téléphone..." value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: '360px' }} />
-      </div>
-
-      {/* Table */}
-      <div className="card">
-        <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 180px 140px 100px 130px 80px',
-          padding: '10px 20px', fontSize: '11px', fontWeight: 700,
-          color: 'var(--text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase',
-          borderBottom: '1px solid var(--border)',
-        }}>
-          <span>Contact</span><span>Email</span><span>Téléphone</span><span>Agent</span><span>Statut</span><span>Date</span>
+      {/* Main Table Area */}
+      <div className="workspace-card !p-0 border-white/5">
+        <div className="p-6 border-b border-white/5 bg-white/[0.02] flex flex-col md:flex-row gap-6 justify-between items-center">
+            <div className="relative w-full max-w-md">
+               <input 
+                 className="input-lux !pl-12 !py-2" 
+                 placeholder="Rechercher un prospect..." 
+                 value={search}
+                 onChange={e => setSearch(e.target.value)}
+               />
+               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ghost text-sm">🔍</span>
+            </div>
+            <div className="badge-lux text-[9px]">{filtered.length} Résultats</div>
         </div>
 
-        {loading ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#505050' }}>Chargement...</div>
-        ) : filtered.length === 0 ? (
-          <div style={{ padding: '60px', textAlign: 'center', color: '#505050' }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎯</div>
-            <div style={{ fontSize: '14px' }}>
-              {search || filter !== 'all' ? 'Aucun résultat.' : 'Aucun lead pour l\'instant. Les leads apparaissent automatiquement quand un visiteur partage ses coordonnées.'}
-            </div>
-          </div>
-        ) : filtered.map(lead => (
-          <div key={lead.id} className="table-row"
-            style={{
-              gridTemplateColumns: '1fr 180px 140px 100px 130px 80px',
-              cursor: 'pointer',
-              background: selected === lead.id ? 'rgba(255,255,255,0.02)' : 'transparent',
-            }}
-            onClick={() => setSelected(selected === lead.id ? null : lead.id)}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
-                background: `hsl(${(lead.name?.charCodeAt(0) || 65) * 5 % 360}, 30%, 20%)`,
-                border: '1px solid rgba(255,255,255,0.08)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '13px', fontWeight: 700, color: '#C0C0C0',
-              }}>{(lead.name || '?')[0].toUpperCase()}</div>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: '#F0F0F0' }}>{lead.name || 'Inconnu'}</div>
-                {lead.company && <div style={{ fontSize: '11px', color: '#606060' }}>{lead.company}</div>}
-              </div>
-            </div>
-            <span style={{ fontSize: '13px', color: '#888', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lead.email || '—'}</span>
-            <span style={{ fontSize: '13px', color: '#888' }}>{lead.phone || '—'}</span>
-            <span style={{ fontSize: '12px', color: '#606060' }}>{(lead as { agents?: { name?: string } }).agents?.name || '—'}</span>
-            <div>
-              <select
-                value={lead.status}
-                onChange={e => { e.stopPropagation(); updateStatus(lead.id, e.target.value); }}
-                style={{
-                  background: 'transparent', border: 'none', color: STATUS_COLORS[lead.status],
-                  fontSize: '12px', fontWeight: 700, cursor: 'pointer', outline: 'none',
-                }}
-                onClick={e => e.stopPropagation()}
-              >
-                {Object.entries(STATUS_LABELS).map(([k, v]) => (
-                  <option key={k} value={k} style={{ background: '#1A1A1A' }}>{v}</option>
-                ))}
-              </select>
-            </div>
-            <span style={{ fontSize: '12px', color: '#505050' }}>
-              {new Date(lead.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
-            </span>
-          </div>
-        ))}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-white/5 text-[10px] font-black text-ghost uppercase tracking-widest">
+                <th className="px-8 py-5">Prospect</th>
+                <th className="px-8 py-5">Coordonnées</th>
+                <th className="px-8 py-5">Source Agent</th>
+                <th className="px-8 py-5">Statut de conversion</th>
+                <th className="px-8 py-5 text-right">Horodatage</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={5} className="p-20 text-center text-ghost font-bold text-xs">Synchronisation...</td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={5} className="p-20 text-center text-ghost font-bold text-xs italic">Aucune donnée correspondante.</td></tr>
+              ) : filtered.map((lead) => (
+                <tr key={lead.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.01] transition-colors group">
+                  <td className="px-8 py-5">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-transparent border border-white/10 flex items-center justify-center font-bold text-sm text-white shadow-lg">
+                        {(lead.name || '?')[0].toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-bold text-sm text-white">{lead.name || 'Anonyme'}</div>
+                        <div className="text-[10px] text-ghost font-bold uppercase">{lead.company || 'Direct'}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-5">
+                    <div className="space-y-1">
+                      <div className="text-xs font-medium text-dim">{lead.email || '—'}</div>
+                      <div className="text-[10px] font-bold text-ghost">{lead.phone || '—'}</div>
+                    </div>
+                  </td>
+                  <td className="px-8 py-5">
+                    <div className="flex items-center gap-2">
+                       <div className="w-1.5 h-1.5 rounded-full bg-accent/40" />
+                       <span className="text-[11px] font-bold text-dim uppercase tracking-wider">{(lead as any).agents?.name || 'Inconnu'}</span>
+                    </div>
+                  </td>
+                  <td className="px-8 py-5">
+                    <select
+                      value={lead.status}
+                      onChange={e => updateStatus(lead.id, e.target.value)}
+                      className="bg-black/40 border border-white/5 rounded-lg px-3 py-1.5 text-[11px] font-bold text-main outline-none focus:border-accent transition-colors"
+                      style={{ color: STATUS_COLORS[lead.status] }}
+                    >
+                      {Object.entries(STATUS_LABELS).map(([k, v]) => (
+                        <option key={k} value={k} className="bg-base">{v}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="px-8 py-5 text-right">
+                    <div className="text-xs font-bold text-ghost">
+                      {new Date(lead.created_at).toLocaleDateString('fr-FR')}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

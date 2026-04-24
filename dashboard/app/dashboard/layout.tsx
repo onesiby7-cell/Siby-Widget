@@ -19,52 +19,20 @@ const NAV = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<{ email: string; full_name?: string } | null>(null);
-  const [notifCount, setNotifCount] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
 
-  const showToast = useCallback((message: string) => {
-    setToast(message);
-    setTimeout(() => setToast(null), 5000);
-  }, []);
-
   useEffect(() => {
     const checkAccess = () => {
       const isAuthorized = localStorage.getItem('siby_admin_access') === 'true';
-      if (!isAuthorized) {
-        router.push('/auth/login');
-        return;
-      }
+      if (!isAuthorized) { router.push('/auth/login'); return; }
       setUser({ email: 'onesiby7@gmail.com', full_name: 'Admin Siby' });
     };
     checkAccess();
   }, [router]);
-
-  useEffect(() => {
-    const channel = supabase.channel('leads-realtime')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'leads' }, (payload) => {
-        const lead = payload.new as any;
-        showToast(`🎯 Nouveau lead : ${lead.full_name || lead.email || 'Anonyme'}`);
-        setNotifCount(prev => prev + 1);
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [supabase, showToast]);
-
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault();
-        setSearchOpen(prev => !prev);
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('siby_admin_access');
@@ -72,99 +40,86 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/auth/login');
   };
 
-
-  const [theme, setTheme] = useState('dark');
-
-  useEffect(() => {
-    const saved = localStorage.getItem('siby_theme') || 'dark';
-    setTheme(saved);
-    document.documentElement.setAttribute('data-theme', saved);
-  }, []);
-
-  const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-    localStorage.setItem('siby_theme', next);
-    document.documentElement.setAttribute('data-theme', next);
-  };
-
   return (
-    <div className="flex min-h-screen bg-base text-primary font-sans transition-colors duration-300">
+    <div className="flex min-h-screen bg-deep text-main selection:bg-accent/20">
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      {toast && (
-        <div className="fixed top-5 right-5 z-[9999] px-5 py-3 rounded-xl bg-surface border border-green-500/30 text-sm font-medium animate-in slide-in-from-right-10 shadow-xl">
-          {toast}
-        </div>
-      )}
-
-      {/* Sidebar */}
-      <aside className={`sticky top-0 h-screen transition-all ${collapsed ? 'w-20' : 'w-72'} border-r border-border bg-base flex flex-col`}>
-        <div className="p-6 flex items-center justify-between">
+      {/* Sidebar Lux */}
+      <aside className={`sticky top-0 h-screen transition-all duration-500 ease-expo ${collapsed ? 'w-20' : 'w-72'} border-r border-white/5 bg-base flex flex-col z-50`}>
+        <div className="h-20 flex items-center px-6 justify-between">
            {!collapsed && (
-             <Link href="/dashboard" className="flex items-center gap-3">
-               {/* 💎 PLATINUM LOGO FALLBACK */}
-               <div style={{
-                  width: '32px', height: '32px', borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #10B981, #059669)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '18px', fontWeight: 900, color: '#000',
-                  boxShadow: '0 4px 12px rgba(16,185,129,0.2)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  flexShrink: 0
-                }}>S</div>
-               <span className="font-extrabold text-xl tracking-tighter italic color-primary">SIBY <span className="text-muted not-italic font-light">SAAS</span></span>
-             </Link>
+             <div className="flex items-center gap-3">
+               <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-black text-black text-lg shadow-2xl shadow-white/20">S</div>
+               <span className="font-bold text-lg tracking-tight text-white uppercase italic">Siby <span className="text-dim not-italic font-light">Work</span></span>
+             </div>
            )}
-           <button onClick={() => setCollapsed(!collapsed)} className="p-2 hover:bg-elevated rounded-lg text-muted">
+           <button onClick={() => setCollapsed(!collapsed)} className="w-8 h-8 flex items-center justify-center hover:bg-white/5 rounded-full text-ghost transition-colors">
              {collapsed ? '→' : '←'}
            </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+        <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1 custom-scrollbar">
           {NAV.map(item => (
             <Link 
               key={item.href} 
               href={item.href}
-              className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${pathname === item.href ? 'bg-elevated text-primary border border-border shadow-sm' : 'text-muted hover:bg-elevated hover:text-primary'}`}
+              className={`sidebar-link ${pathname === item.href ? 'active' : ''}`}
             >
-              <span className="text-xl">{item.icon}</span>
-              {!collapsed && <span className="text-sm font-bold tracking-tight">{item.label}</span>}
-              {!collapsed && item.label === 'Leads CRM' && notifCount > 0 && (
-                <span className="ml-auto bg-primary text-black text-[10px] font-black px-1.5 py-0.5 rounded-full">{notifCount}</span>
+              <span className="text-lg">{item.icon}</span>
+              {!collapsed && <span>{item.label}</span>}
+              {!collapsed && pathname === item.href && (
+                <div className="ml-auto w-1 h-1 rounded-full bg-accent shadow-[0_0_8px_var(--accent)]" />
               )}
             </Link>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-border">
-           <button onClick={handleLogout} className="w-full flex items-center gap-4 px-4 py-3 text-red-500 hover:bg-red-500/5 rounded-xl text-sm font-bold">
-             <span>⏻</span> {!collapsed && 'Déconnexion'}
+        <div className="p-4 mt-auto border-t border-white/5">
+           <button onClick={handleLogout} className="sidebar-link w-full text-red-500/70 hover:text-red-500 hover:bg-red-500/5 transition-all">
+             <span>⏻</span> {!collapsed && 'Quitter'}
            </button>
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto flex flex-col">
-        <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur-xl border-b border-border p-6 flex justify-between items-center h-20 shadow-sm">
-            <div className="text-[10px] font-black text-muted uppercase tracking-[0.2em]">SIBY CLOUD PROTOCOL V5.5</div>
-            <div className="flex items-center gap-6">
-                <button onClick={toggleTheme} className="w-9 h-9 flex items-center justify-center rounded-xl bg-elevated border border-border hover:border-muted transition-all text-lg">
-                  {theme === 'dark' ? '☀️' : '🌙'}
+      {/* Workspace Area */}
+      <div className="flex-1 flex flex-col min-w-0 bg-base relative overflow-hidden">
+        {/* Ambient Background Glows */}
+        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+
+        <header className="h-20 flex items-center justify-between px-10 border-b border-white/5 bg-base/50 backdrop-blur-md z-40 sticky top-0">
+            <div className="flex items-center gap-4">
+              <div className="h-6 w-1 bg-accent rounded-full" />
+              <div className="text-[11px] font-bold text-ghost uppercase tracking-[0.3em]">Protocol v6.2 • Platinum Workspace</div>
+            </div>
+
+            <div className="flex items-center gap-8">
+                {/* Search Trigger */}
+                <button 
+                  onClick={() => setSearchOpen(true)}
+                  className="hidden md:flex items-center gap-3 px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-ghost hover:border-white/10 transition-all text-xs"
+                >
+                  <span className="text-sm">⌘</span>
+                  <span>Recherche...</span>
+                  <span className="ml-4 opacity-50">K</span>
                 </button>
-                <div className="flex items-center gap-3">
-                    <div className="flex flex-col items-end">
-                      <span className="text-xs font-black uppercase text-primary">{user?.full_name || 'Admin'}</span>
-                      <span className="text-[10px] font-bold text-muted uppercase tracking-wider">Owner Access</span>
+
+                <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="text-xs font-bold text-main">{user?.full_name}</div>
+                      <div className="text-[10px] font-medium text-ghost uppercase tracking-widest">Enterprise</div>
                     </div>
-                    <div className="w-10 h-10 rounded-xl bg-elevated border border-border flex items-center justify-center font-black text-primary shadow-inner">
-                      {user?.full_name?.charAt(0) || 'A'}
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center font-bold text-white shadow-xl">
+                      {user?.full_name?.charAt(0)}
                     </div>
                 </div>
             </div>
         </header>
-        <div className="flex-1 overflow-y-auto p-10 bg-base">{children}</div>
-      </main>
+
+        <main className="flex-1 p-10 relative z-10 overflow-y-auto animate-entrance">
+          <div className="max-w-7xl mx-auto">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }

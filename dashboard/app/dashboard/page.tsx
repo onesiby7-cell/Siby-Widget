@@ -25,7 +25,6 @@ export default function DashboardPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        // On utilise l'ID maître ou l'utilisateur auth si dispo
         const { data: authData } = await supabase.auth.getUser();
         const userId = authData?.user?.id || '00000000-0000-0000-0000-000000000000';
 
@@ -46,206 +45,186 @@ export default function DashboardPage() {
         });
         setLoading(false);
       } catch (err) {
-        console.error("Erreur de chargement Dashboard:", err);
+        console.error("Erreur Dashboard:", err);
       }
     };
     load();
   }, []);
 
-  const INSIGHTS = [
-    { type: 'trend', text: "Le système SSR est actif. Vos sessions sont sécurisées au niveau Enterprise.", color: '#22C55E' },
-    { type: 'alert', text: "Pensez à enregistrer chaque paiement reçu dans l'onglet 'Finances'.", color: '#EAB308' },
-    { type: 'tip', text: "Vos agents avec le statut 'Stopé' ne consomment plus de tokens IA.", color: '#C0C0C0' },
-  ];
-
   const STAT_CARDS = [
-    { label: 'Revenus (Empire)', value: `$ ${stats.revenue.toLocaleString()}`, icon: '💰', color: '#22C55E', trend: 'Empire' },
-    { label: 'Capture Leads', value: stats.leads, icon: '🎯', color: '#22C55E', trend: 'Conversion' },
-    { label: 'Agents Actifs', value: stats.agents, icon: '🛡️', color: '#606060', trend: 'SaaS' },
-    { label: 'Messages IA', value: stats.messages, icon: '🧠', color: '#C0C0C0', trend: `Limit: ${profile?.message_quota || 10000}` },
+    { label: 'Revenus Empire', value: `$${stats.revenue}`, icon: '💰', color: '#10B981' },
+    { label: 'Capture Leads', value: stats.leads, icon: '🎯', color: '#10B981' },
+    { label: 'Agents IA', value: stats.agents, icon: '🛡️', color: '#FFF' },
+    { label: 'Messages IA', value: stats.messages, icon: '🧠', color: '#FFF' },
   ];
-
-  const REVENUE_GOAL = 5000; // Objectif de 5000$ pour le test
-  const revenuePercent = Math.min(100, (stats.revenue / REVENUE_GOAL) * 100);
 
   return (
-    <div style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '32px' }}>
-        <div>
-          <h1 style={{
-            fontSize: '28px', fontWeight: 800, color: 'var(--text-primary)',
-            letterSpacing: '-0.8px', marginBottom: '6px',
-          }}>
-            Bonjour, {profile?.full_name?.split(' ')[0] || 'Admin'} 👋
+    <div className="space-y-10">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="space-y-2">
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter">
+            Espace <span className="text-gradient">Premium</span>
           </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
-            Vue d'ensemble de votre plateforme d'agents IA
-          </p>
+          <p className="text-dim text-sm font-medium">Contrôle total de votre infrastructure IA.</p>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <div style={{
-            padding: '8px 16px', borderRadius: '12px', background: 'rgba(34,197,94,0.05)', 
-            border: '1px solid rgba(34,197,94,0.15)', display: 'flex', flexDirection: 'column',
-            minWidth: '160px'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <span style={{ fontSize: '10px', fontWeight: 800, color: '#22C55E' }}>Objectif : {REVENUE_GOAL}$</span>
-              <span style={{ fontSize: '10px', fontWeight: 800, color: '#F0F0F0' }}>{Math.round(revenuePercent)}%</span>
-            </div>
-            <div style={{ height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
-              <div style={{ width: `${revenuePercent}%`, height: '100%', background: '#22C55E', transition: 'width 1s ease-out' }} />
-            </div>
-          </div>
-          <span style={{
-            padding: '6px 14px', borderRadius: '100px',
-            background: 'rgba(192,192,192,0.08)', border: '1px solid rgba(192,192,192,0.15)',
-            fontSize: '11px', fontWeight: 800, color: '#C0C0C0', textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-          }}>
-            SYSTEM PLATINUM
-          </span>
-          <Link href="/dashboard/agents/new" className="btn-primary" style={{ textDecoration: 'none', fontSize: '13px', padding: '10px 18px', fontWeight: 800 }}>
-            + NOUVEL AGENT
-          </Link>
+        <div className="flex items-center gap-4">
+           <div className="badge-lux">Protocol active</div>
+           <Link href="/dashboard/agents/new" className="btn-platinum shadow-xl shadow-white/10">
+             + Créer un Agent
+           </Link>
         </div>
       </div>
 
-      {/* Stat cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
-        {STAT_CARDS.map((s) => (
-          <div key={s.label} className="stat-card">
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <div style={{
-                width: '40px', height: '40px', borderRadius: '10px',
-                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px',
-              }}>{s.icon}</div>
-              <span style={{ fontSize: '11px', color: s.color === '#22C55E' ? '#22C55E' : '#505050', fontWeight: 600 }}>
-                {s.trend}
-              </span>
+      {/* Primary Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {STAT_CARDS.map((s, i) => (
+          <div key={i} className="workspace-card group">
+            <div className="flex items-start justify-between mb-8">
+              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform duration-500">
+                {s.icon}
+              </div>
+              <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
             </div>
-            <div style={{ fontSize: '32px', fontWeight: 800, color: '#F0F0F0', letterSpacing: '-1px', marginBottom: '4px' }}>
-              {loading ? '—' : s.value.toLocaleString()}
+            <div className="space-y-1">
+              <div className="text-4xl font-black text-white tracking-tighter">
+                {loading ? '...' : s.value}
+              </div>
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-ghost">
+                {s.label}
+              </div>
             </div>
-            <div style={{ fontSize: '12px', color: '#606060', fontWeight: 500 }}>{s.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Charts row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '24px' }}>
-        {/* Activity chart */}
-        <div className="card" style={{ padding: '24px' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#F0F0F0', marginBottom: '4px' }}>
-              Activité — 7 derniers jours
-            </h2>
-            <p style={{ fontSize: '12px', color: '#606060' }}>Sessions et leads par jour</p>
-          </div>
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={chartData} margin={{ top: 5, right: 0, left: -30, bottom: 0 }}>
-              <defs>
-                <linearGradient id="gSessions" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#C0C0C0" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#C0C0C0" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="gLeads" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#22C55E" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#22C55E" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="day" stroke="#404040" tick={{ fontSize: 11 }} />
-              <YAxis stroke="#404040" tick={{ fontSize: 11 }} />
-              <Tooltip
-                contentStyle={{ background: '#1A1A1A', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', fontSize: '12px' }}
-                labelStyle={{ color: '#C0C0C0' }}
-              />
-              <Area type="monotone" dataKey="sessions" stroke="#C0C0C0" strokeWidth={2} fill="url(#gSessions)" />
-              <Area type="monotone" dataKey="leads" stroke="#22C55E" strokeWidth={2} fill="url(#gLeads)" />
-            </AreaChart>
-          </ResponsiveContainer>
-
-        </div>
-
-        {/* AI Insights Sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div className="card" style={{ padding: '24px', background: 'linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, rgba(0,0,0,0) 100%)' }}>
-            <h2 style={{ fontSize: '15px', fontWeight: 800, color: '#F0F0F0', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '18px' }}>🧠</span> IA Insights
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {INSIGHTS.map((ins, i) => (
-                <div key={i} style={{ padding: '12px', borderRadius: '12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ fontSize: '10px', fontWeight: 800, color: ins.color, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '4px' }}>{ins.type}</div>
-                  <div style={{ fontSize: '13px', color: '#888', lineHeight: 1.5 }}>{ins.text}</div>
-                </div>
-              ))}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Performance Graph */}
+        <div className="lg:col-span-2 workspace-card overflow-visible">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-lg font-bold">Activité Réseau</h2>
+              <p className="text-xs text-ghost">Flux de sessions sur les 7 derniers jours</p>
+            </div>
+            <div className="flex gap-2">
+               <div className="w-3 h-3 rounded-full bg-accent" />
+               <div className="w-3 h-3 rounded-full bg-white/10" />
             </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {[
-              { icon: '⚡', label: 'Nouvel Agent', href: '/dashboard/agents/new', color: '#10B981' },
-              { icon: '🎯', label: 'Leads CRM', href: '/dashboard/leads', color: '#22C55E' },
-            ].map(a => (
-              <Link key={a.href} href={a.href} style={{
-                display: 'flex', alignItems: 'center', gap: '10px', padding: '12px',
-                borderRadius: '12px', background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                textDecoration: 'none', color: 'var(--text-primary)', fontSize: '13px',
-                fontWeight: 600, transition: 'all 0.2s',
-              }}>
-                <span style={{ fontSize: '16px' }}>{a.icon}</span>
-                <span>{a.label}</span>
-                <span style={{ marginLeft: 'auto', color: 'var(--text-muted)' }}>→</span>
-              </Link>
-            ))}
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="gLeads" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#0D0D0D', 
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '16px',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                  }}
+                  itemStyle={{ color: '#E2E2E2' }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="leads" 
+                  stroke="#10B981" 
+                  strokeWidth={4} 
+                  fill="url(#gLeads)" 
+                  animationDuration={2000}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
+        </div>
+
+        {/* AI System Status */}
+        <div className="space-y-6">
+          <div className="workspace-card bg-gradient-to-br from-accent/10 to-transparent border-accent/20">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center text-xl text-black font-bold shadow-lg shadow-accent/20">🧠</div>
+              <h2 className="text-lg font-bold text-white">IA Core Status</h2>
+            </div>
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-black/40 border border-white/5">
+                <div className="text-[10px] font-black text-accent uppercase mb-1">Système</div>
+                <div className="text-xs text-dim leading-relaxed font-medium">Moteur Platinum v6.2 opérationnel. Latence moyenne : 1.2s.</div>
+              </div>
+              <div className="p-4 rounded-xl bg-black/40 border border-white/5">
+                <div className="text-[10px] font-black text-blue-400 uppercase mb-1">Optimisation</div>
+                <div className="text-xs text-dim leading-relaxed font-medium">La base de données a été simplifiée pour une fluidité maximale.</div>
+              </div>
+            </div>
+          </div>
+
+          <Link href="/dashboard/leads" className="workspace-card flex items-center justify-between hover:bg-white/5">
+             <div className="flex items-center gap-4">
+               <span className="text-2xl">🎯</span>
+               <span className="font-bold">Accès CRM</span>
+             </div>
+             <span className="text-ghost">→</span>
+          </Link>
         </div>
       </div>
 
-      {/* Agents table */}
-      <div className="card">
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h2 style={{ fontSize: '15px', fontWeight: 700, color: '#F0F0F0' }}>Agents récents</h2>
-          <Link href="/dashboard/agents" style={{ fontSize: '12px', color: '#C0C0C0', textDecoration: 'none', fontWeight: 600 }}>
-            Voir tous →
-          </Link>
+      {/* Recent Activity Table */}
+      <div className="workspace-card !p-0 overflow-hidden border-white/5">
+        <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+          <h3 className="font-bold">Agents récents</h3>
+          <Link href="/dashboard/agents" className="text-xs font-bold text-ghost hover:text-white transition-colors">Explorer tout →</Link>
         </div>
+        
         {agents.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#505050', fontSize: '14px' }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px' }}>⚡</div>
-            Aucun agent créé.{' '}
-            <Link href="/dashboard/agents/new" style={{ color: '#C0C0C0' }}>Créez votre premier agent →</Link>
+          <div className="p-20 text-center space-y-4">
+            <div className="text-4xl opacity-20">⚡</div>
+            <div className="text-ghost text-sm font-medium">Aucun agent configuré pour le moment.</div>
           </div>
         ) : (
-          <div>
-            <div style={{
-              display: 'grid', gridTemplateColumns: '1fr 100px 100px 100px 120px',
-              padding: '10px 24px', fontSize: '11px', fontWeight: 700,
-              color: 'var(--text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase',
-              borderBottom: '1px solid var(--border)',
-            }}>
-              <span>Agent</span><span>Sessions</span><span>Leads</span><span>Status</span><span>Actions</span>
-            </div>
-            {agents.map(a => (
-              <div key={a.id} className="table-row" style={{ gridTemplateColumns: '1fr 100px 100px 100px 120px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>⚡</div>
-                  <div>
-                    <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{a.name}</div>
-                  </div>
-                </div>
-                <span style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: 600 }}>{a.total_sessions || 0}</span>
-                <span style={{ fontSize: '14px', color: '#22C55E', fontWeight: 600 }}>{a.total_leads || 0}</span>
-                <span className={`badge ${a.status === 'active' ? 'badge-green' : 'badge-amber'}`}>
-                  {a.status === 'active' ? '● Actif' : '○ Inactif'}
-                </span>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  <Link href={`/dashboard/agents/${a.id}`} style={{ padding: '5px 10px', borderRadius: '6px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-secondary)', fontSize: '12px', textDecoration: 'none', fontWeight: 600 }}>Éditer</Link>
-                </div>
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-white/5 text-[10px] font-black text-ghost uppercase tracking-widest">
+                  <th className="px-8 py-5">Agent</th>
+                  <th className="px-8 py-5">Performance</th>
+                  <th className="px-8 py-5">Status</th>
+                  <th className="px-8 py-5 text-right">Contrôle</th>
+                </tr>
+              </thead>
+              <tbody>
+                {agents.map((a) => (
+                  <tr key={a.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.01] transition-colors group">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center font-bold group-hover:border-accent transition-colors">A</div>
+                        <div>
+                          <div className="font-bold text-sm">{a.name}</div>
+                          <div className="text-[10px] text-ghost font-bold uppercase">ID: {a.id.slice(0,8)}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-accent">{a.total_sessions || 0}</span>
+                        <span className="text-xs text-ghost">sessions</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase ${a.status === 'active' ? 'bg-accent/10 text-accent border border-accent/20' : 'bg-ghost/10 text-ghost border border-white/10'}`}>
+                        {a.status}
+                      </span>
+                    </td>
+                    <td className="px-8 py-5 text-right">
+                      <Link href={`/dashboard/agents/${a.id}`} className="btn-ghost !py-2 !px-4 !text-xs">Configurer</Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
