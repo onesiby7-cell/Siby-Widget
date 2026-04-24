@@ -77,6 +77,7 @@ CREATE TABLE public.agents (
   client_id UUID REFERENCES public.clients(id) ON DELETE SET NULL,
 
   name TEXT NOT NULL,
+  slug TEXT UNIQUE, -- [FIX] Ajouté pour compatibilité dashboard
   description TEXT,
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'draft')),
 
@@ -109,6 +110,13 @@ CREATE TABLE public.agents (
   animation_style TEXT DEFAULT 'float' CHECK (animation_style IN ('float','pulse','shake','none')),
   widget_theme TEXT DEFAULT 'dark' CHECK (widget_theme IN ('dark','light','auto')),
   placeholder_text TEXT DEFAULT 'Posez-moi une question...',
+
+  -- Formulaire Leads (Personnalisation) [FIX] Ajouté pour compatibilité
+  ask_phone BOOLEAN DEFAULT FALSE,
+  ask_company BOOLEAN DEFAULT FALSE,
+  ask_website BOOLEAN DEFAULT FALSE,
+  lead_intro TEXT DEFAULT 'Laissez-nous vos coordonnées pour que nous puissions vous recontacter.',
+  lead_success TEXT DEFAULT 'Merci ! Un expert vous recontactera sous 24h.',
 
   -- Connecteurs
   telegram_bot_token TEXT,
