@@ -75,7 +75,7 @@ export default function AgentsPage() {
       </div>
 
       {/* Control Bar */}
-      <div className="workspace-card flex flex-col md:flex-row gap-6 items-center bg-white/[0.02]">
+      <div className="workspace-card flex flex-col md:flex-row gap-6 items-center bg-base">
         <div className="relative flex-1 w-full">
            <input 
              className="input-lux !pl-12" 
@@ -85,12 +85,12 @@ export default function AgentsPage() {
            />
            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ghost">🔍</span>
         </div>
-        <div className="flex gap-2 p-1 bg-black/20 rounded-xl border border-white/5">
+        <div className="flex gap-2 p-1 bg-base rounded-xl border border-white/5">
            {(['all', 'active', 'inactive', 'draft'] as const).map(f => (
              <button 
                key={f} 
                onClick={() => setFilter(f)} 
-               className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${filter === f ? 'bg-white/10 text-white shadow-lg' : 'text-ghost hover:text-dim'}`}
+               className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${filter === f ? 'bg-elevated text-white shadow-lg' : 'text-ghost hover:text-dim'}`}
              >
                {f.toUpperCase()}
              </button>
@@ -122,8 +122,8 @@ export default function AgentsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-bold text-white truncate">{agent.name}</h3>
-                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${agent.status === 'active' ? 'bg-accent/10 text-accent border border-accent/20' : 'bg-white/5 text-ghost border border-white/10'}`}>
+                    <h3 className="font-bold text-main truncate">{agent.name}</h3>
+                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase ${agent.status === 'active' ? 'bg-accent/10 text-accent border border-accent/20' : 'bg-base text-ghost border border-white/10'}`}>
                       {agent.status}
                     </span>
                   </div>
@@ -138,8 +138,8 @@ export default function AgentsPage() {
                   { l: 'MESSAGES', v: agent.total_messages || 0 },
                   { l: 'LEADS', v: agent.total_leads || 0, c: 'text-accent' },
                 ].map((s, idx) => (
-                  <div key={idx} className="p-3 rounded-xl bg-black/20 border border-white/5 text-center">
-                    <div className={`text-lg font-black tracking-tighter ${s.c || 'text-white'}`}>{s.v}</div>
+                  <div key={idx} className="p-3 rounded-xl bg-base border border-white/5 text-center">
+                    <div className={`text-lg font-black tracking-tighter ${s.c || 'text-main'}`}>{s.v}</div>
                     <div className="text-[8px] font-black text-ghost">{s.l}</div>
                   </div>
                 ))}

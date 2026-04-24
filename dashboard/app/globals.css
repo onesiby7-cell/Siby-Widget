@@ -10,7 +10,7 @@
   --bg-base:      #080808;
   --bg-surface:   #0D0D0D;
   --bg-elevated:  #141414;
-  --bg-glass:     rgba(13, 13, 13, 0.7);
+  --bg-glass:     #0D0D0D;
   
   --border:       rgba(255, 255, 255, 0.06);
   --border-glow:  rgba(255, 255, 255, 0.12);
@@ -33,7 +33,7 @@
   --bg-base:      #FFFFFF;
   --bg-surface:   #F8F9FA;
   --bg-elevated:  #E9ECEF;
-  --bg-glass:     rgba(255, 255, 255, 0.8);
+  --bg-glass:     #F8F9FA;
   
   --border:       rgba(0, 0, 0, 0.08);
   --border-glow:  rgba(0, 0, 0, 0.15);
@@ -76,9 +76,7 @@ h1, h2, h3, h4 { font-weight: 800; letter-spacing: -0.03em; color: var(--text-ma
 
 /* ── Glass Components ────────────────────────────────────── */
 .glass {
-  background: var(--bg-glass);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: var(--bg-surface);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-lux);
 }
@@ -94,14 +92,11 @@ h1, h2, h3, h4 { font-weight: 800; letter-spacing: -0.03em; color: var(--text-ma
 }
 .workspace-card:hover {
   border-color: var(--border-glow);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lux);
 }
 .workspace-card::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  display: none;
 }
 
 /* ── Input & Select ───────────────────────────────────────── */

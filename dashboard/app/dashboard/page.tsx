@@ -82,7 +82,7 @@ export default function DashboardPage() {
         {STAT_CARDS.map((s, i) => (
           <div key={i} className="workspace-card group">
             <div className="flex items-start justify-between mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform duration-500">
+              <div className="w-12 h-12 rounded-2xl bg-base border border-white/10 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform duration-500">
                 {s.icon}
               </div>
               <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
@@ -151,11 +151,11 @@ export default function DashboardPage() {
               <h2 className="text-lg font-bold text-white">IA Core Status</h2>
             </div>
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-black/40 border border-white/5">
+              <div className="p-4 rounded-xl bg-base border border-white/5">
                 <div className="text-[10px] font-black text-accent uppercase mb-1">Système</div>
                 <div className="text-xs text-dim leading-relaxed font-medium">Moteur Platinum v6.2 opérationnel. Latence moyenne : 1.2s.</div>
               </div>
-              <div className="p-4 rounded-xl bg-black/40 border border-white/5">
+              <div className="p-4 rounded-xl bg-base border border-white/5">
                 <div className="text-[10px] font-black text-blue-400 uppercase mb-1">Optimisation</div>
                 <div className="text-xs text-dim leading-relaxed font-medium">La base de données a été simplifiée pour une fluidité maximale.</div>
               </div>
@@ -174,7 +174,7 @@ export default function DashboardPage() {
 
       {/* Recent Activity Table */}
       <div className="workspace-card !p-0 overflow-hidden border-white/5">
-        <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+        <div className="p-6 border-b border-white/5 flex items-center justify-between bg-base">
           <h3 className="font-bold">Agents récents</h3>
           <Link href="/dashboard/agents" className="text-xs font-bold text-ghost hover:text-white transition-colors">Explorer tout →</Link>
         </div>
@@ -197,10 +197,10 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 {agents.map((a) => (
-                  <tr key={a.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.01] transition-colors group">
+                  <tr key={a.id} className="border-b border-white/5 last:border-0 hover:bg-base transition-colors group">
                     <td className="px-8 py-5">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center font-bold group-hover:border-accent transition-colors">A</div>
+                        <div className="w-10 h-10 rounded-xl bg-base border border-white/5 flex items-center justify-center font-bold group-hover:border-accent transition-colors">A</div>
                         <div>
                           <div className="font-bold text-sm">{a.name}</div>
                           <div className="text-[10px] text-ghost font-bold uppercase">ID: {a.id.slice(0,8)}</div>

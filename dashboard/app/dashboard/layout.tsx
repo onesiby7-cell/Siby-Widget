@@ -98,11 +98,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Workspace Area */}
       <div className="flex-1 flex flex-col min-w-0 bg-base relative overflow-hidden">
-        {/* Ambient Background Glows */}
-        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
-
-        <header className="h-20 flex items-center justify-between px-10 border-b border-white/5 bg-base/50 backdrop-blur-md z-40 sticky top-0">
+        <header className="h-20 flex items-center justify-between px-10 border-b border-white/5 bg-base z-40 sticky top-0">
             <div className="flex items-center gap-4">
               <div className="h-6 w-1 bg-accent rounded-full" />
               <div className="text-[11px] font-bold text-ghost uppercase tracking-[0.3em]">Protocol v6.2 • Platinum Workspace</div>

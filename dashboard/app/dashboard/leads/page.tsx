@@ -76,7 +76,7 @@ export default function LeadsPage() {
             <div 
               key={k} 
               onClick={() => setFilter(isActive ? 'all' : k)} 
-              className={`workspace-card !p-4 cursor-pointer transition-all duration-300 ${isActive ? 'ring-2 ring-accent bg-accent/5' : 'hover:bg-white/5'}`}
+              className={`workspace-card !p-4 cursor-pointer transition-all duration-300 ${isActive ? 'ring-2 ring-accent bg-base' : 'hover:bg-base'}`}
             >
               <div className="text-2xl font-black text-white mb-1">{count}</div>
               <div className="text-[9px] font-black uppercase tracking-widest text-ghost">{v}</div>
@@ -87,7 +87,7 @@ export default function LeadsPage() {
 
       {/* Main Table Area */}
       <div className="workspace-card !p-0 border-white/5">
-        <div className="p-6 border-b border-white/5 bg-white/[0.02] flex flex-col md:flex-row gap-6 justify-between items-center">
+        <div className="p-6 border-b border-white/5 bg-base flex flex-col md:flex-row gap-6 justify-between items-center">
             <div className="relative w-full max-w-md">
                <input 
                  className="input-lux !pl-12 !py-2" 
@@ -117,7 +117,7 @@ export default function LeadsPage() {
               ) : filtered.length === 0 ? (
                 <tr><td colSpan={5} className="p-20 text-center text-ghost font-bold text-xs italic">Aucune donnée correspondante.</td></tr>
               ) : filtered.map((lead) => (
-                <tr key={lead.id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.01] transition-colors group">
+                <tr key={lead.id} className="border-b border-white/5 last:border-0 hover:bg-base transition-colors group">
                   <td className="px-8 py-5">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-transparent border border-white/10 flex items-center justify-center font-bold text-sm text-white shadow-lg">
@@ -145,7 +145,7 @@ export default function LeadsPage() {
                     <select
                       value={lead.status}
                       onChange={e => updateStatus(lead.id, e.target.value)}
-                      className="bg-black/40 border border-white/5 rounded-lg px-3 py-1.5 text-[11px] font-bold text-main outline-none focus:border-accent transition-colors"
+                      className="bg-base border border-white/5 rounded-lg px-3 py-1.5 text-[11px] font-bold text-main outline-none focus:border-accent transition-colors"
                       style={{ color: STATUS_COLORS[lead.status] }}
                     >
                       {Object.entries(STATUS_LABELS).map(([k, v]) => (
