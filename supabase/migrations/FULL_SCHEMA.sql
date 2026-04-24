@@ -1,7 +1,8 @@
 -- ================================================================
--- 🚀 SIBY-WIDGET — SQL MASTER ENTERPRISE (v6.0 Platinum)
+-- 🚀 SIBY-WIDGET — SQL MASTER ENTERPRISE FULL (v6.1 Platinum)
 -- ================================================================
 -- Ce fichier contient TOUT le schéma consolidé pour Siby Enterprise.
+-- ✅ Supporte : CRM, Analytics, Templates, Webhooks, Finances, Live Monitor.
 -- ⚠️ ATTENTION : Ce script supprime TOUTES les données existantes.
 -- ================================================================
 
@@ -27,7 +28,7 @@ DROP TABLE IF EXISTS public.clients CASCADE;
 DROP TABLE IF EXISTS public.profiles CASCADE;
 
 -- ══════════════════════════════════════════════════════════════════
--- EXTENSIONS
+-- EXTENSIONS & UTILS
 -- ══════════════════════════════════════════════════════════════════
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
@@ -68,14 +69,13 @@ CREATE TABLE public.clients (
 );
 
 -- ══════════════════════════════════════════════════════════════════
--- TABLE: agents (PLATINUM v6.0)
+-- TABLE: agents (PLATINUM v6.1)
 -- ══════════════════════════════════════════════════════════════════
 CREATE TABLE public.agents (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
   client_id UUID REFERENCES public.clients(id) ON DELETE SET NULL,
 
-  -- Identité
   name TEXT NOT NULL,
   description TEXT,
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'draft')),
@@ -90,7 +90,7 @@ CREATE TABLE public.agents (
   sentiment_analysis BOOLEAN DEFAULT TRUE,
   autonomous_browsing BOOLEAN DEFAULT FALSE,
 
-  -- Design "Platinum" & TikTok Style
+  -- Design
   primary_color TEXT DEFAULT '#0A0A0A',
   secondary_color TEXT DEFAULT '#FFFFFF',
   accent_color TEXT DEFAULT '#C0C0C0',
@@ -116,7 +116,7 @@ CREATE TABLE public.agents (
   email_capture_enabled BOOLEAN DEFAULT TRUE,
   notification_email TEXT,
 
-  -- Analytics
+  -- Stats
   total_sessions INTEGER DEFAULT 0,
   total_messages INTEGER DEFAULT 0,
   total_leads INTEGER DEFAULT 0,
@@ -151,7 +151,7 @@ CREATE TABLE public.messages (
 );
 
 -- ══════════════════════════════════════════════════════════════════
--- TABLE: leads
+-- TABLE: leads (CRM)
 -- ══════════════════════════════════════════════════════════════════
 CREATE TABLE public.leads (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -167,6 +167,31 @@ CREATE TABLE public.leads (
 );
 
 -- ══════════════════════════════════════════════════════════════════
+-- TABLE: templates (Bibliothèque d'agents)
+-- ══════════════════════════════════════════════════════════════════
+CREATE TABLE public.templates (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  description TEXT,
+  system_prompt TEXT NOT NULL,
+  is_public BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ══════════════════════════════════════════════════════════════════
+-- TABLE: webhook_logs (Historique des envois)
+-- ══════════════════════════════════════════════════════════════════
+CREATE TABLE public.webhook_logs (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  agent_id UUID REFERENCES public.agents(id) ON DELETE CASCADE,
+  event_type TEXT NOT NULL,
+  payload JSONB,
+  response_status INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ══════════════════════════════════════════════════════════════════
 -- SECURITY (RLS)
 -- ══════════════════════════════════════════════════════════════════
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -174,11 +199,13 @@ ALTER TABLE public.agents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.templates ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admin manage all" ON public.profiles FOR ALL USING (id = '00000000-0000-0000-0000-000000000000' OR auth.uid() = id);
 CREATE POLICY "Admin manage agents" ON public.agents FOR ALL USING (user_id = '00000000-0000-0000-0000-000000000000' OR user_id = auth.uid());
 CREATE POLICY "Admin manage leads" ON public.leads FOR ALL USING (user_id = '00000000-0000-0000-0000-000000000000' OR user_id = auth.uid());
 CREATE POLICY "Public read agents" ON public.agents FOR SELECT USING (status = 'active');
+CREATE POLICY "Public read templates" ON public.templates FOR SELECT USING (is_public = TRUE);
 
 -- ══════════════════════════════════════════════════════════════════
 -- SEED & RPC
@@ -194,4 +221,4 @@ INSERT INTO public.profiles (id, email, full_name, plan)
 VALUES ('00000000-0000-0000-0000-000000000000', 'onesiby7@gmail.com', 'Admin Siby', 'enterprise')
 ON CONFLICT (id) DO UPDATE SET plan = 'enterprise';
 
--- ✅ TERMINÉ — Schéma Master v6.0 Enterprise prêt !
+-- ✅ TERMINÉ — Schéma Master v6.1 Enterprise FULL prêt !
