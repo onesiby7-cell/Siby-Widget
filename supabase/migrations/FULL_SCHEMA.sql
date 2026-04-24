@@ -1,8 +1,8 @@
 -- ================================================================
--- 🚀 SIBY-WIDGET — SQL MASTER ENTERPRISE FULL (v6.1 Platinum)
+-- 🚀 SIBY-WIDGET — SQL MASTER ENTERPRISE (v6.2 Simplified)
 -- ================================================================
--- Ce fichier contient TOUT le schéma consolidé pour Siby Enterprise.
--- ✅ Supporte : CRM, Analytics, Templates, Webhooks, Finances, Live Monitor.
+-- Ce fichier contient le schéma consolidé pour Siby Enterprise.
+-- ✅ Supporte : CRM, Analytics, Finances, Conversations.
 -- ⚠️ ATTENTION : Ce script supprime TOUTES les données existantes.
 -- ================================================================
 
@@ -69,7 +69,7 @@ CREATE TABLE public.clients (
 );
 
 -- ══════════════════════════════════════════════════════════════════
--- TABLE: agents (PLATINUM v6.1)
+-- TABLE: agents (PLATINUM v6.2)
 -- ══════════════════════════════════════════════════════════════════
 CREATE TABLE public.agents (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -77,7 +77,7 @@ CREATE TABLE public.agents (
   client_id UUID REFERENCES public.clients(id) ON DELETE SET NULL,
 
   name TEXT NOT NULL,
-  slug TEXT UNIQUE, -- [FIX] Ajouté pour compatibilité dashboard
+  slug TEXT UNIQUE,
   description TEXT,
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'draft')),
 
@@ -115,13 +115,6 @@ CREATE TABLE public.agents (
   welcome_message TEXT DEFAULT 'Bonjour 👋 Comment puis-je vous aider ?',
   custom_css TEXT,
 
-  -- Formulaire Leads (Personnalisation) [FIX] Ajouté pour compatibilité
-  ask_phone BOOLEAN DEFAULT FALSE,
-  ask_company BOOLEAN DEFAULT FALSE,
-  ask_website BOOLEAN DEFAULT FALSE,
-  lead_intro TEXT DEFAULT 'Laissez-nous vos coordonnées pour que nous puissions vous recontacter.',
-  lead_success TEXT DEFAULT 'Merci ! Un expert vous recontactera sous 24h.',
-
   -- Connecteurs
   telegram_bot_token TEXT,
   telegram_chat_id TEXT,
@@ -129,6 +122,13 @@ CREATE TABLE public.agents (
   whatsapp_api_key TEXT,
   email_capture_enabled BOOLEAN DEFAULT TRUE,
   notification_email TEXT,
+
+  -- Formulaire Leads (Personnalisation)
+  ask_phone BOOLEAN DEFAULT FALSE,
+  ask_company BOOLEAN DEFAULT FALSE,
+  ask_website BOOLEAN DEFAULT FALSE,
+  lead_intro TEXT DEFAULT 'Laissez-nous vos coordonnées pour que nous puissions vous recontacter.',
+  lead_success TEXT DEFAULT 'Merci ! Un expert vous recontactera sous 24h.',
 
   -- Stats
   total_sessions INTEGER DEFAULT 0,
@@ -184,31 +184,6 @@ CREATE TABLE public.leads (
 );
 
 -- ══════════════════════════════════════════════════════════════════
--- TABLE: templates (Bibliothèque d'agents)
--- ══════════════════════════════════════════════════════════════════
-CREATE TABLE public.templates (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  name TEXT NOT NULL,
-  category TEXT NOT NULL,
-  description TEXT,
-  system_prompt TEXT NOT NULL,
-  is_public BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ══════════════════════════════════════════════════════════════════
--- TABLE: webhook_logs (Historique des envois)
--- ══════════════════════════════════════════════════════════════════
-CREATE TABLE public.webhook_logs (
-  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  agent_id UUID REFERENCES public.agents(id) ON DELETE CASCADE,
-  event_type TEXT NOT NULL,
-  payload JSONB,
-  response_status INTEGER,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- ══════════════════════════════════════════════════════════════════
 -- SECURITY (RLS)
 -- ══════════════════════════════════════════════════════════════════
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -216,13 +191,11 @@ ALTER TABLE public.agents ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.templates ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admin manage all" ON public.profiles FOR ALL USING (id = '00000000-0000-0000-0000-000000000000' OR auth.uid() = id);
 CREATE POLICY "Admin manage agents" ON public.agents FOR ALL USING (user_id = '00000000-0000-0000-0000-000000000000' OR user_id = auth.uid());
 CREATE POLICY "Admin manage leads" ON public.leads FOR ALL USING (user_id = '00000000-0000-0000-0000-000000000000' OR user_id = auth.uid());
 CREATE POLICY "Public read agents" ON public.agents FOR SELECT USING (status = 'active');
-CREATE POLICY "Public read templates" ON public.templates FOR SELECT USING (is_public = TRUE);
 
 -- ══════════════════════════════════════════════════════════════════
 -- SEED & RPC
@@ -238,4 +211,4 @@ INSERT INTO public.profiles (id, email, full_name, plan)
 VALUES ('00000000-0000-0000-0000-000000000000', 'onesiby7@gmail.com', 'Admin Siby', 'enterprise')
 ON CONFLICT (id) DO UPDATE SET plan = 'enterprise';
 
--- ✅ TERMINÉ — Schéma Master v6.1 Enterprise FULL prêt !
+-- ✅ TERMINÉ — Schéma Master v6.2 (Simplified) prêt !

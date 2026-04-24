@@ -8,15 +8,12 @@ import SearchModal from './SearchModal';
 const NAV = [
   { href: '/dashboard', icon: '◈', label: 'Vue d\'ensemble' },
   { href: '/dashboard/agents', icon: '⚡', label: 'Mes Agents' },
-  { href: '/dashboard/live', icon: '👁', label: 'Live Monitor' },
   { href: '/dashboard/clients', icon: '👥', label: 'Mes Clients' },
   { href: '/dashboard/conversations', icon: '📜', label: 'Conversations' },
   { href: '/dashboard/leads', icon: '🎯', label: 'Leads CRM' },
   { href: '/dashboard/finances', icon: '💰', label: 'Finances' },
   { href: '/dashboard/analytics', icon: '📊', label: 'Analytics' },
   { href: '/dashboard/playground', icon: '🧪', label: 'Playground' },
-  { href: '/dashboard/templates', icon: '📋', label: 'Templates' },
-  { href: '/dashboard/webhooks', icon: '🔗', label: 'Webhooks' },
   { href: '/dashboard/settings', icon: '⚙️', label: 'Paramètres' },
 ];
 
