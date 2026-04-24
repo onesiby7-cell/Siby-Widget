@@ -40,8 +40,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/auth/login');
   };
 
+  const [theme, setTheme] = useState('dark');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('siby_theme') || 'dark';
+    setTheme(saved);
+    document.documentElement.setAttribute('data-theme', saved);
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    localStorage.setItem('siby_theme', next);
+    document.documentElement.setAttribute('data-theme', next);
+  };
+
   return (
-    <div className="flex min-h-screen bg-deep text-main selection:bg-accent/20">
+    <div className={`flex min-h-screen bg-deep text-main selection:bg-accent/20 ${theme === 'light' ? 'light-mode' : ''}`}>
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {/* Sidebar Lux */}
@@ -49,8 +64,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="h-20 flex items-center px-6 justify-between">
            {!collapsed && (
              <div className="flex items-center gap-3">
-               <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-black text-black text-lg shadow-2xl shadow-white/20">S</div>
-               <span className="font-bold text-lg tracking-tight text-white uppercase italic">Siby <span className="text-dim not-italic font-light">Work</span></span>
+               <div className={`w-8 h-8 rounded-lg ${theme === 'dark' ? 'bg-white text-black' : 'bg-black text-white'} flex items-center justify-center font-black text-lg shadow-2xl shadow-white/20`}>S</div>
+               <span className={`font-bold text-lg tracking-tight ${theme === 'dark' ? 'text-white' : 'text-black'} uppercase italic`}>Siby <span className="text-dim not-italic font-light">Work</span></span>
              </div>
            )}
            <button onClick={() => setCollapsed(!collapsed)} className="w-8 h-8 flex items-center justify-center hover:bg-white/5 rounded-full text-ghost transition-colors">
@@ -94,6 +109,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
 
             <div className="flex items-center gap-8">
+                {/* Theme Toggle */}
+                <button 
+                  onClick={toggleTheme}
+                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-all text-lg"
+                >
+                  {theme === 'dark' ? '☀️' : '🌙'}
+                </button>
+
                 {/* Search Trigger */}
                 <button 
                   onClick={() => setSearchOpen(true)}
@@ -109,7 +132,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <div className="text-xs font-bold text-main">{user?.full_name}</div>
                       <div className="text-[10px] font-medium text-ghost uppercase tracking-widest">Enterprise</div>
                     </div>
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center font-bold text-white shadow-xl">
+                    <div className={`w-10 h-10 rounded-xl ${theme === 'dark' ? 'bg-gradient-to-br from-white/10 to-white/5 border-white/10' : 'bg-gradient-to-br from-black/10 to-black/5 border-black/10'} border flex items-center justify-center font-bold text-main shadow-xl`}>
                       {user?.full_name?.charAt(0)}
                     </div>
                 </div>

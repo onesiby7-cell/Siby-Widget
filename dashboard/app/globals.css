@@ -44,7 +44,7 @@
   
   --accent:       #059669;
   --platinum:     linear-gradient(135deg, #1A1A1A 0%, #4A4A4A 100%);
-  --shadow-lux:   0 8px 24px rgba(0,0,0,0.05);
+  --shadow-lux:   0 8px 32px rgba(0,0,0,0.08);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; cursor: default; }
@@ -66,7 +66,7 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: var(--text-ghost); }
 
 /* ── Typography ─────────────────────────────────────────── */
-h1, h2, h3, h4 { font-weight: 800; letter-spacing: -0.03em; color: #FFF; }
+h1, h2, h3, h4 { font-weight: 800; letter-spacing: -0.03em; color: var(--text-main); }
 .text-gradient {
   background: var(--platinum);
   -webkit-background-clip: text;
