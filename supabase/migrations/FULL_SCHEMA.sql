@@ -85,6 +85,7 @@ CREATE TABLE public.agents (
   system_prompt TEXT DEFAULT 'Tu es un assistant IA expert.',
   knowledge_base TEXT,
   model TEXT DEFAULT 'llama-3.1-70b-versatile',
+  language TEXT DEFAULT 'fr',
   temperature NUMERIC(3,2) DEFAULT 0.7,
   max_tokens INTEGER DEFAULT 2048,
   groq_api_key TEXT,
@@ -102,6 +103,7 @@ CREATE TABLE public.agents (
   entrance_animation TEXT DEFAULT 'fade-up',
   position TEXT DEFAULT 'bottom-right',
   button_icon TEXT DEFAULT '🤖',
+  button_label TEXT DEFAULT 'Discuter avec nous',
   chat_title TEXT DEFAULT 'Assistant IA',
   chat_subtitle TEXT DEFAULT 'En ligne • Répond instantanément',
   avatar_url TEXT,
@@ -110,6 +112,8 @@ CREATE TABLE public.agents (
   animation_style TEXT DEFAULT 'float' CHECK (animation_style IN ('float','pulse','shake','none')),
   widget_theme TEXT DEFAULT 'dark' CHECK (widget_theme IN ('dark','light','auto')),
   placeholder_text TEXT DEFAULT 'Posez-moi une question...',
+  welcome_message TEXT DEFAULT 'Bonjour 👋 Comment puis-je vous aider ?',
+  custom_css TEXT,
 
   -- Formulaire Leads (Personnalisation) [FIX] Ajouté pour compatibilité
   ask_phone BOOLEAN DEFAULT FALSE,
@@ -121,6 +125,8 @@ CREATE TABLE public.agents (
   -- Connecteurs
   telegram_bot_token TEXT,
   telegram_chat_id TEXT,
+  whatsapp_phone TEXT,
+  whatsapp_api_key TEXT,
   email_capture_enabled BOOLEAN DEFAULT TRUE,
   notification_email TEXT,
 
@@ -130,6 +136,9 @@ CREATE TABLE public.agents (
   total_leads INTEGER DEFAULT 0,
   conversion_rate NUMERIC(5,2) DEFAULT 0.00,
   avg_latency INTEGER DEFAULT 0,
+  satisfaction_score NUMERIC(3,2),
+  quick_replies TEXT[],
+  enabled_tools TEXT[],
 
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
